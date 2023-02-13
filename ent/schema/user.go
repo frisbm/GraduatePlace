@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 
 	"github.com/MatthewFrisby/thesis-pieces/ent/schema/mixins"
 )
@@ -28,10 +29,15 @@ func (User) Fields() []ent.Field {
 			Unique(),
 		field.String("password").
 			NotEmpty().
-			MinLen(8).
 			Sensitive(),
+		field.String("first_name").
+			NotEmpty(),
+		field.String("last_name").
+			NotEmpty(),
 		field.Bool("is_admin").
 			Default(false),
+		field.UUID("uuid", uuid.UUID{}).
+			Default(uuid.New),
 	}
 }
 

@@ -4,6 +4,8 @@ package user
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const (
@@ -21,8 +23,14 @@ const (
 	FieldEmail = "email"
 	// FieldPassword holds the string denoting the password field in the database.
 	FieldPassword = "password"
+	// FieldFirstName holds the string denoting the first_name field in the database.
+	FieldFirstName = "first_name"
+	// FieldLastName holds the string denoting the last_name field in the database.
+	FieldLastName = "last_name"
 	// FieldIsAdmin holds the string denoting the is_admin field in the database.
 	FieldIsAdmin = "is_admin"
+	// FieldUUID holds the string denoting the uuid field in the database.
+	FieldUUID = "uuid"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 )
@@ -35,7 +43,10 @@ var Columns = []string{
 	FieldUsername,
 	FieldEmail,
 	FieldPassword,
+	FieldFirstName,
+	FieldLastName,
 	FieldIsAdmin,
+	FieldUUID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -61,6 +72,12 @@ var (
 	EmailValidator func(string) error
 	// PasswordValidator is a validator for the "password" field. It is called by the builders before save.
 	PasswordValidator func(string) error
+	// FirstNameValidator is a validator for the "first_name" field. It is called by the builders before save.
+	FirstNameValidator func(string) error
+	// LastNameValidator is a validator for the "last_name" field. It is called by the builders before save.
+	LastNameValidator func(string) error
 	// DefaultIsAdmin holds the default value on creation for the "is_admin" field.
 	DefaultIsAdmin bool
+	// DefaultUUID holds the default value on creation for the "uuid" field.
+	DefaultUUID func() uuid.UUID
 )

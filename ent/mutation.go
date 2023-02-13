@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/MatthewFrisby/thesis-pieces/ent/predicate"
 	"github.com/MatthewFrisby/thesis-pieces/ent/user"
 
@@ -39,7 +41,10 @@ type UserMutation struct {
 	username      *string
 	email         *string
 	password      *string
+	first_name    *string
+	last_name     *string
 	is_admin      *bool
+	uuid          *uuid.UUID
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*User, error)
@@ -324,6 +329,78 @@ func (m *UserMutation) ResetPassword() {
 	m.password = nil
 }
 
+// SetFirstName sets the "first_name" field.
+func (m *UserMutation) SetFirstName(s string) {
+	m.first_name = &s
+}
+
+// FirstName returns the value of the "first_name" field in the mutation.
+func (m *UserMutation) FirstName() (r string, exists bool) {
+	v := m.first_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFirstName returns the old "first_name" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldFirstName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFirstName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFirstName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFirstName: %w", err)
+	}
+	return oldValue.FirstName, nil
+}
+
+// ResetFirstName resets all changes to the "first_name" field.
+func (m *UserMutation) ResetFirstName() {
+	m.first_name = nil
+}
+
+// SetLastName sets the "last_name" field.
+func (m *UserMutation) SetLastName(s string) {
+	m.last_name = &s
+}
+
+// LastName returns the value of the "last_name" field in the mutation.
+func (m *UserMutation) LastName() (r string, exists bool) {
+	v := m.last_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastName returns the old "last_name" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldLastName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastName: %w", err)
+	}
+	return oldValue.LastName, nil
+}
+
+// ResetLastName resets all changes to the "last_name" field.
+func (m *UserMutation) ResetLastName() {
+	m.last_name = nil
+}
+
 // SetIsAdmin sets the "is_admin" field.
 func (m *UserMutation) SetIsAdmin(b bool) {
 	m.is_admin = &b
@@ -360,6 +437,42 @@ func (m *UserMutation) ResetIsAdmin() {
 	m.is_admin = nil
 }
 
+// SetUUID sets the "uuid" field.
+func (m *UserMutation) SetUUID(u uuid.UUID) {
+	m.uuid = &u
+}
+
+// UUID returns the value of the "uuid" field in the mutation.
+func (m *UserMutation) UUID() (r uuid.UUID, exists bool) {
+	v := m.uuid
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUUID returns the old "uuid" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldUUID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUUID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUUID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUUID: %w", err)
+	}
+	return oldValue.UUID, nil
+}
+
+// ResetUUID resets all changes to the "uuid" field.
+func (m *UserMutation) ResetUUID() {
+	m.uuid = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -394,7 +507,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 9)
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
 	}
@@ -410,8 +523,17 @@ func (m *UserMutation) Fields() []string {
 	if m.password != nil {
 		fields = append(fields, user.FieldPassword)
 	}
+	if m.first_name != nil {
+		fields = append(fields, user.FieldFirstName)
+	}
+	if m.last_name != nil {
+		fields = append(fields, user.FieldLastName)
+	}
 	if m.is_admin != nil {
 		fields = append(fields, user.FieldIsAdmin)
+	}
+	if m.uuid != nil {
+		fields = append(fields, user.FieldUUID)
 	}
 	return fields
 }
@@ -431,8 +553,14 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Email()
 	case user.FieldPassword:
 		return m.Password()
+	case user.FieldFirstName:
+		return m.FirstName()
+	case user.FieldLastName:
+		return m.LastName()
 	case user.FieldIsAdmin:
 		return m.IsAdmin()
+	case user.FieldUUID:
+		return m.UUID()
 	}
 	return nil, false
 }
@@ -452,8 +580,14 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldEmail(ctx)
 	case user.FieldPassword:
 		return m.OldPassword(ctx)
+	case user.FieldFirstName:
+		return m.OldFirstName(ctx)
+	case user.FieldLastName:
+		return m.OldLastName(ctx)
 	case user.FieldIsAdmin:
 		return m.OldIsAdmin(ctx)
+	case user.FieldUUID:
+		return m.OldUUID(ctx)
 	}
 	return nil, fmt.Errorf("unknown User field %s", name)
 }
@@ -498,12 +632,33 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetPassword(v)
 		return nil
+	case user.FieldFirstName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFirstName(v)
+		return nil
+	case user.FieldLastName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastName(v)
+		return nil
 	case user.FieldIsAdmin:
 		v, ok := value.(bool)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIsAdmin(v)
+		return nil
+	case user.FieldUUID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUUID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)
@@ -569,8 +724,17 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldPassword:
 		m.ResetPassword()
 		return nil
+	case user.FieldFirstName:
+		m.ResetFirstName()
+		return nil
+	case user.FieldLastName:
+		m.ResetLastName()
+		return nil
 	case user.FieldIsAdmin:
 		m.ResetIsAdmin()
+		return nil
+	case user.FieldUUID:
+		m.ResetUUID()
 		return nil
 	}
 	return fmt.Errorf("unknown User field %s", name)

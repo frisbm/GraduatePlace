@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 
 	"github.com/MatthewFrisby/thesis-pieces/ent/user"
 )
@@ -67,6 +68,18 @@ func (uc *UserCreate) SetPassword(s string) *UserCreate {
 	return uc
 }
 
+// SetFirstName sets the "first_name" field.
+func (uc *UserCreate) SetFirstName(s string) *UserCreate {
+	uc.mutation.SetFirstName(s)
+	return uc
+}
+
+// SetLastName sets the "last_name" field.
+func (uc *UserCreate) SetLastName(s string) *UserCreate {
+	uc.mutation.SetLastName(s)
+	return uc
+}
+
 // SetIsAdmin sets the "is_admin" field.
 func (uc *UserCreate) SetIsAdmin(b bool) *UserCreate {
 	uc.mutation.SetIsAdmin(b)
@@ -77,6 +90,20 @@ func (uc *UserCreate) SetIsAdmin(b bool) *UserCreate {
 func (uc *UserCreate) SetNillableIsAdmin(b *bool) *UserCreate {
 	if b != nil {
 		uc.SetIsAdmin(*b)
+	}
+	return uc
+}
+
+// SetUUID sets the "uuid" field.
+func (uc *UserCreate) SetUUID(u uuid.UUID) *UserCreate {
+	uc.mutation.SetUUID(u)
+	return uc
+}
+
+// SetNillableUUID sets the "uuid" field if the given value is not nil.
+func (uc *UserCreate) SetNillableUUID(u *uuid.UUID) *UserCreate {
+	if u != nil {
+		uc.SetUUID(*u)
 	}
 	return uc
 }
@@ -128,6 +155,10 @@ func (uc *UserCreate) defaults() {
 		v := user.DefaultIsAdmin
 		uc.mutation.SetIsAdmin(v)
 	}
+	if _, ok := uc.mutation.UUID(); !ok {
+		v := user.DefaultUUID()
+		uc.mutation.SetUUID(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -162,8 +193,27 @@ func (uc *UserCreate) check() error {
 			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
 		}
 	}
+	if _, ok := uc.mutation.FirstName(); !ok {
+		return &ValidationError{Name: "first_name", err: errors.New(`ent: missing required field "User.first_name"`)}
+	}
+	if v, ok := uc.mutation.FirstName(); ok {
+		if err := user.FirstNameValidator(v); err != nil {
+			return &ValidationError{Name: "first_name", err: fmt.Errorf(`ent: validator failed for field "User.first_name": %w`, err)}
+		}
+	}
+	if _, ok := uc.mutation.LastName(); !ok {
+		return &ValidationError{Name: "last_name", err: errors.New(`ent: missing required field "User.last_name"`)}
+	}
+	if v, ok := uc.mutation.LastName(); ok {
+		if err := user.LastNameValidator(v); err != nil {
+			return &ValidationError{Name: "last_name", err: fmt.Errorf(`ent: validator failed for field "User.last_name": %w`, err)}
+		}
+	}
 	if _, ok := uc.mutation.IsAdmin(); !ok {
 		return &ValidationError{Name: "is_admin", err: errors.New(`ent: missing required field "User.is_admin"`)}
+	}
+	if _, ok := uc.mutation.UUID(); !ok {
+		return &ValidationError{Name: "uuid", err: errors.New(`ent: missing required field "User.uuid"`)}
 	}
 	return nil
 }
@@ -217,9 +267,21 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
 		_node.Password = value
 	}
+	if value, ok := uc.mutation.FirstName(); ok {
+		_spec.SetField(user.FieldFirstName, field.TypeString, value)
+		_node.FirstName = value
+	}
+	if value, ok := uc.mutation.LastName(); ok {
+		_spec.SetField(user.FieldLastName, field.TypeString, value)
+		_node.LastName = value
+	}
 	if value, ok := uc.mutation.IsAdmin(); ok {
 		_spec.SetField(user.FieldIsAdmin, field.TypeBool, value)
 		_node.IsAdmin = value
+	}
+	if value, ok := uc.mutation.UUID(); ok {
+		_spec.SetField(user.FieldUUID, field.TypeUUID, value)
+		_node.UUID = value
 	}
 	return _node, _spec
 }

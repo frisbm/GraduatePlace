@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 
 	"github.com/MatthewFrisby/thesis-pieces/ent/predicate"
 	"github.com/MatthewFrisby/thesis-pieces/ent/user"
@@ -53,6 +54,18 @@ func (uu *UserUpdate) SetPassword(s string) *UserUpdate {
 	return uu
 }
 
+// SetFirstName sets the "first_name" field.
+func (uu *UserUpdate) SetFirstName(s string) *UserUpdate {
+	uu.mutation.SetFirstName(s)
+	return uu
+}
+
+// SetLastName sets the "last_name" field.
+func (uu *UserUpdate) SetLastName(s string) *UserUpdate {
+	uu.mutation.SetLastName(s)
+	return uu
+}
+
 // SetIsAdmin sets the "is_admin" field.
 func (uu *UserUpdate) SetIsAdmin(b bool) *UserUpdate {
 	uu.mutation.SetIsAdmin(b)
@@ -63,6 +76,20 @@ func (uu *UserUpdate) SetIsAdmin(b bool) *UserUpdate {
 func (uu *UserUpdate) SetNillableIsAdmin(b *bool) *UserUpdate {
 	if b != nil {
 		uu.SetIsAdmin(*b)
+	}
+	return uu
+}
+
+// SetUUID sets the "uuid" field.
+func (uu *UserUpdate) SetUUID(u uuid.UUID) *UserUpdate {
+	uu.mutation.SetUUID(u)
+	return uu
+}
+
+// SetNillableUUID sets the "uuid" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableUUID(u *uuid.UUID) *UserUpdate {
+	if u != nil {
+		uu.SetUUID(*u)
 	}
 	return uu
 }
@@ -125,6 +152,16 @@ func (uu *UserUpdate) check() error {
 			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
 		}
 	}
+	if v, ok := uu.mutation.FirstName(); ok {
+		if err := user.FirstNameValidator(v); err != nil {
+			return &ValidationError{Name: "first_name", err: fmt.Errorf(`ent: validator failed for field "User.first_name": %w`, err)}
+		}
+	}
+	if v, ok := uu.mutation.LastName(); ok {
+		if err := user.LastNameValidator(v); err != nil {
+			return &ValidationError{Name: "last_name", err: fmt.Errorf(`ent: validator failed for field "User.last_name": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -161,8 +198,17 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := uu.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
 	}
+	if value, ok := uu.mutation.FirstName(); ok {
+		_spec.SetField(user.FieldFirstName, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.LastName(); ok {
+		_spec.SetField(user.FieldLastName, field.TypeString, value)
+	}
 	if value, ok := uu.mutation.IsAdmin(); ok {
 		_spec.SetField(user.FieldIsAdmin, field.TypeBool, value)
+	}
+	if value, ok := uu.mutation.UUID(); ok {
+		_spec.SetField(user.FieldUUID, field.TypeUUID, value)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -208,6 +254,18 @@ func (uuo *UserUpdateOne) SetPassword(s string) *UserUpdateOne {
 	return uuo
 }
 
+// SetFirstName sets the "first_name" field.
+func (uuo *UserUpdateOne) SetFirstName(s string) *UserUpdateOne {
+	uuo.mutation.SetFirstName(s)
+	return uuo
+}
+
+// SetLastName sets the "last_name" field.
+func (uuo *UserUpdateOne) SetLastName(s string) *UserUpdateOne {
+	uuo.mutation.SetLastName(s)
+	return uuo
+}
+
 // SetIsAdmin sets the "is_admin" field.
 func (uuo *UserUpdateOne) SetIsAdmin(b bool) *UserUpdateOne {
 	uuo.mutation.SetIsAdmin(b)
@@ -218,6 +276,20 @@ func (uuo *UserUpdateOne) SetIsAdmin(b bool) *UserUpdateOne {
 func (uuo *UserUpdateOne) SetNillableIsAdmin(b *bool) *UserUpdateOne {
 	if b != nil {
 		uuo.SetIsAdmin(*b)
+	}
+	return uuo
+}
+
+// SetUUID sets the "uuid" field.
+func (uuo *UserUpdateOne) SetUUID(u uuid.UUID) *UserUpdateOne {
+	uuo.mutation.SetUUID(u)
+	return uuo
+}
+
+// SetNillableUUID sets the "uuid" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableUUID(u *uuid.UUID) *UserUpdateOne {
+	if u != nil {
+		uuo.SetUUID(*u)
 	}
 	return uuo
 }
@@ -287,6 +359,16 @@ func (uuo *UserUpdateOne) check() error {
 			return &ValidationError{Name: "password", err: fmt.Errorf(`ent: validator failed for field "User.password": %w`, err)}
 		}
 	}
+	if v, ok := uuo.mutation.FirstName(); ok {
+		if err := user.FirstNameValidator(v); err != nil {
+			return &ValidationError{Name: "first_name", err: fmt.Errorf(`ent: validator failed for field "User.first_name": %w`, err)}
+		}
+	}
+	if v, ok := uuo.mutation.LastName(); ok {
+		if err := user.LastNameValidator(v); err != nil {
+			return &ValidationError{Name: "last_name", err: fmt.Errorf(`ent: validator failed for field "User.last_name": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -340,8 +422,17 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if value, ok := uuo.mutation.Password(); ok {
 		_spec.SetField(user.FieldPassword, field.TypeString, value)
 	}
+	if value, ok := uuo.mutation.FirstName(); ok {
+		_spec.SetField(user.FieldFirstName, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.LastName(); ok {
+		_spec.SetField(user.FieldLastName, field.TypeString, value)
+	}
 	if value, ok := uuo.mutation.IsAdmin(); ok {
 		_spec.SetField(user.FieldIsAdmin, field.TypeBool, value)
+	}
+	if value, ok := uuo.mutation.UUID(); ok {
+		_spec.SetField(user.FieldUUID, field.TypeUUID, value)
 	}
 	_node = &User{config: uuo.config}
 	_spec.Assign = _node.assignValues

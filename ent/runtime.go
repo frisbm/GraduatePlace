@@ -5,6 +5,8 @@ package ent
 import (
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/MatthewFrisby/thesis-pieces/ent/schema"
 	"github.com/MatthewFrisby/thesis-pieces/ent/user"
 )
@@ -39,23 +41,21 @@ func init() {
 	// userDescPassword is the schema descriptor for password field.
 	userDescPassword := userFields[2].Descriptor()
 	// user.PasswordValidator is a validator for the "password" field. It is called by the builders before save.
-	user.PasswordValidator = func() func(string) error {
-		validators := userDescPassword.Validators
-		fns := [...]func(string) error{
-			validators[0].(func(string) error),
-			validators[1].(func(string) error),
-		}
-		return func(password string) error {
-			for _, fn := range fns {
-				if err := fn(password); err != nil {
-					return err
-				}
-			}
-			return nil
-		}
-	}()
+	user.PasswordValidator = userDescPassword.Validators[0].(func(string) error)
+	// userDescFirstName is the schema descriptor for first_name field.
+	userDescFirstName := userFields[3].Descriptor()
+	// user.FirstNameValidator is a validator for the "first_name" field. It is called by the builders before save.
+	user.FirstNameValidator = userDescFirstName.Validators[0].(func(string) error)
+	// userDescLastName is the schema descriptor for last_name field.
+	userDescLastName := userFields[4].Descriptor()
+	// user.LastNameValidator is a validator for the "last_name" field. It is called by the builders before save.
+	user.LastNameValidator = userDescLastName.Validators[0].(func(string) error)
 	// userDescIsAdmin is the schema descriptor for is_admin field.
-	userDescIsAdmin := userFields[3].Descriptor()
+	userDescIsAdmin := userFields[5].Descriptor()
 	// user.DefaultIsAdmin holds the default value on creation for the is_admin field.
 	user.DefaultIsAdmin = userDescIsAdmin.Default.(bool)
+	// userDescUUID is the schema descriptor for uuid field.
+	userDescUUID := userFields[6].Descriptor()
+	// user.DefaultUUID holds the default value on creation for the uuid field.
+	user.DefaultUUID = userDescUUID.Default.(func() uuid.UUID)
 }

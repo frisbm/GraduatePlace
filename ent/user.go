@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 
 	"github.com/MatthewFrisby/thesis-pieces/ent/user"
 )
@@ -27,8 +28,14 @@ type User struct {
 	Email string `json:"email,omitempty"`
 	// Password holds the value of the "password" field.
 	Password string `json:"-"`
+	// FirstName holds the value of the "first_name" field.
+	FirstName string `json:"first_name,omitempty"`
+	// LastName holds the value of the "last_name" field.
+	LastName string `json:"last_name,omitempty"`
 	// IsAdmin holds the value of the "is_admin" field.
 	IsAdmin bool `json:"is_admin,omitempty"`
+	// UUID holds the value of the "uuid" field.
+	UUID uuid.UUID `json:"uuid,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -40,10 +47,12 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldUsername, user.FieldEmail, user.FieldPassword:
+		case user.FieldUsername, user.FieldEmail, user.FieldPassword, user.FieldFirstName, user.FieldLastName:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
+		case user.FieldUUID:
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type User", columns[i])
 		}
@@ -95,11 +104,29 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.Password = value.String
 			}
+		case user.FieldFirstName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field first_name", values[i])
+			} else if value.Valid {
+				u.FirstName = value.String
+			}
+		case user.FieldLastName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field last_name", values[i])
+			} else if value.Valid {
+				u.LastName = value.String
+			}
 		case user.FieldIsAdmin:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field is_admin", values[i])
 			} else if value.Valid {
 				u.IsAdmin = value.Bool
+			}
+		case user.FieldUUID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field uuid", values[i])
+			} else if value != nil {
+				u.UUID = *value
 			}
 		}
 	}
@@ -143,8 +170,17 @@ func (u *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("password=<sensitive>")
 	builder.WriteString(", ")
+	builder.WriteString("first_name=")
+	builder.WriteString(u.FirstName)
+	builder.WriteString(", ")
+	builder.WriteString("last_name=")
+	builder.WriteString(u.LastName)
+	builder.WriteString(", ")
 	builder.WriteString("is_admin=")
 	builder.WriteString(fmt.Sprintf("%v", u.IsAdmin))
+	builder.WriteString(", ")
+	builder.WriteString("uuid=")
+	builder.WriteString(fmt.Sprintf("%v", u.UUID))
 	builder.WriteByte(')')
 	return builder.String()
 }
