@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-
 	"github.com/pkg/errors"
 
 	"github.com/MatthewFrisby/thesis-pieces/ent"
@@ -14,8 +13,9 @@ import (
 
 type Store interface {
 	CreateUser(ctx context.Context, registerUser user.RegisterUser) error
-	GetUserForLogin(ctx context.Context, email, password string) ([]*ent.User, error)
+	GetUserForLogin(ctx context.Context, email string) ([]*ent.User, error)
 	GetUserByUUID(ctx context.Context, uuid uuid.UUID) (*ent.User, error)
+	GetUserByContext(ctx context.Context) (*ent.User, error)
 	GetUsers(ctx context.Context) ([]*ent.User, error)
 }
 
@@ -45,25 +45,28 @@ func (m *Manager) RegisterUser(ctx context.Context, registerUser user.RegisterUs
 }
 
 func (m *Manager) LoginUser(ctx context.Context, loginUser user.LoginUser) (*user.AuthTokens, error) {
-	hashedPassword, err := auth.HashPassword(loginUser.Password)
-	if err != nil {
-		// Don't return the actual error here for privacy reasons in-case password present in error
-		return nil, errors.New("error hashing password")
-	}
-	entUser, err := m.store.GetUserForLogin(ctx, loginUser.Email, hashedPassword)
+	entUsers, err := m.store.GetUserForLogin(ctx, loginUser.Email)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(entUser) == 0 {
+	if len(entUsers) == 0 {
 		return nil, errors.New("invalid login information")
 	}
 
-	if len(entUser) > 1 || entUser[0] == nil {
+	if len(entUsers) > 1 || entUsers[0] == nil {
 		return nil, errors.New("unexpected error occurred")
 	}
 
-	return auth.GenerateTokens(entUser[0].UUID.String())
+	entUser := entUsers[0]
+
+	err = auth.ValidatePasswordCorrect(entUser.Password, loginUser.Password)
+
+	if err != nil {
+		return nil, errors.New("invalid login information")
+	}
+
+	return auth.GenerateTokens(entUser.UUID.String())
 }
 
 func (m *Manager) RefreshUser(ctx context.Context, refreshUser user.RefreshUser) (*user.AuthTokens, error) {
@@ -81,9 +84,38 @@ func (m *Manager) RefreshUser(ctx context.Context, refreshUser user.RefreshUser)
 }
 
 func (m *Manager) GetUser(ctx context.Context) (*user.GetUser, error) {
-	return nil, nil
+	entUser, err := m.store.GetUserByContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &user.GetUser{
+		UUID:      entUser.UUID.String(),
+		FirstName: entUser.FirstName,
+		LastName:  entUser.LastName,
+		Email:     entUser.Email,
+		Username:  entUser.Username,
+		CreatedAt: entUser.CreatedAt,
+		UpdatedAt: entUser.UpdatedAt,
+	}, nil
 }
 
-func (m *Manager) GetUsers(ctx context.Context) (*user.GetUsers, error) {
-	return nil, nil
+func (m *Manager) GetUsers(ctx context.Context) ([]*user.GetUser, error) {
+	entUsers, err := m.store.GetUsers(ctx)
+	if err != nil {
+		return nil, err
+	}
+	var users []*user.GetUser
+	for _, entUser := range entUsers {
+		newUser := &user.GetUser{
+			UUID:      entUser.UUID.String(),
+			FirstName: entUser.FirstName,
+			LastName:  entUser.LastName,
+			Email:     entUser.Email,
+			Username:  entUser.Username,
+			CreatedAt: entUser.CreatedAt,
+			UpdatedAt: entUser.UpdatedAt,
+		}
+		users = append(users, newUser)
+	}
+	return users, nil
 }

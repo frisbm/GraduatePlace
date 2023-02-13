@@ -15,7 +15,7 @@ func ValidatePassword(password string) error {
 
 	for _, c := range password {
 		if special && number && upper && lower && length {
-			return nil
+			break
 		}
 		switch {
 		case unicode.IsUpper(c):
@@ -33,7 +33,11 @@ func ValidatePassword(password string) error {
 		}
 	}
 
-	err := errors.New("password does not meet criteria")
+	if special && number && upper && lower && length {
+		return nil
+	}
+
+	err := errors.New("")
 
 	if !length {
 		err = errors.Wrap(err, "[incorrect password length]")
@@ -50,6 +54,7 @@ func ValidatePassword(password string) error {
 	if !upper {
 		err = errors.Wrap(err, "[must contain an uppercase letter]")
 	}
+	err = errors.Wrap(err, "password does not meet criteria")
 
 	return err
 }

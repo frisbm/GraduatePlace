@@ -25,14 +25,11 @@ type RefreshUser struct {
 }
 
 type GetUser struct {
-	ID        int
+	UUID      string
 	FirstName string
 	LastName  string
 	Email     string
-	Password  string
 	Username  string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
-
-type GetUsers []GetUser

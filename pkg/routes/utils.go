@@ -2,6 +2,7 @@ package routes
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 )
 
@@ -12,4 +13,14 @@ func WithContext(withContext RouteWithContext) http.HandlerFunc {
 		ctx := r.Context()
 		withContext(ctx, w, r)
 	}
+}
+
+func responseHeaders(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+}
+
+func Response(w http.ResponseWriter, statusCode int, response any) {
+	responseHeaders(w)
+	w.WriteHeader(statusCode)
+	json.NewEncoder(w).Encode(response)
 }

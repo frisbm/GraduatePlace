@@ -29,6 +29,10 @@ func HashPassword(password string) (string, error) {
 	return string(hash), nil
 }
 
+func ValidatePasswordCorrect(hashedPassword, submittedPassword string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(submittedPassword))
+}
+
 func generateAccessToken(uuid string) (string, error) {
 	tokenMap := make(map[string]interface{})
 	tokenMap["uuid"] = uuid
@@ -90,7 +94,7 @@ func ParseRefreshToken(refreshToken string) (*uuid.UUID, error) {
 		return nil, invalidRefreshTokenErr
 	}
 
-	if token.Expiration().UTC().Unix() > time.Now().UTC().Unix() {
+	if token.Expiration().UTC().Unix() < time.Now().UTC().Unix() {
 		return nil, invalidRefreshTokenErr
 	}
 
@@ -126,7 +130,7 @@ func ParseAccessToken(accessToken string) (*uuid.UUID, error) {
 		return nil, invalidAccessTokenErr
 	}
 
-	if token.Expiration().UTC().Unix() > time.Now().UTC().Unix() {
+	if token.Expiration().UTC().Unix() < time.Now().UTC().Unix() {
 		return nil, accessTokenExpired
 	}
 

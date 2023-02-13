@@ -73,7 +73,7 @@ func (am *AuthMiddleware) Admin(next http.Handler) http.Handler {
 		}
 
 		if !entUser.IsAdmin {
-			w.WriteHeader(http.StatusUnauthorized)
+			w.WriteHeader(http.StatusForbidden)
 			return
 		}
 		// set the user in the context

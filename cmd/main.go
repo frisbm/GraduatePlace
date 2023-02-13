@@ -20,6 +20,10 @@ import (
 	"github.com/MatthewFrisby/thesis-pieces/pkg/stack/user"
 )
 
+const (
+	API_PATH = "/api"
+)
+
 type Route interface {
 	Public(c chi.Router)
 	Private(c chi.Router)
@@ -73,5 +77,8 @@ func main() {
 		route.Private(private)
 		route.Admin(admin)
 	}
-	http.ListenAndServe(":8080", r)
+
+	router := chi.NewRouter()
+	router.Mount(API_PATH, r)
+	http.ListenAndServe(":8080", router)
 }

@@ -2,11 +2,12 @@ package user
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 
 	"github.com/MatthewFrisby/thesis-pieces/ent"
-	user2 "github.com/MatthewFrisby/thesis-pieces/ent/user"
+	entUser "github.com/MatthewFrisby/thesis-pieces/ent/user"
 	"github.com/MatthewFrisby/thesis-pieces/pkg/models/user"
 )
 
@@ -32,17 +33,26 @@ func (s *Store) CreateUser(ctx context.Context, registerUser user.RegisterUser) 
 	return err
 }
 
-func (s *Store) GetUserForLogin(ctx context.Context, email, password string) ([]*ent.User, error) {
+func (s *Store) GetUserForLogin(ctx context.Context, email string) ([]*ent.User, error) {
 	query := s.db.User.Query().Where(
-		user2.Email(email),
-		user2.Password(password),
+		entUser.Email(email),
 	)
 	return query.All(ctx)
 }
 
 func (s *Store) GetUserByUUID(ctx context.Context, uuid uuid.UUID) (*ent.User, error) {
 	return s.db.User.Query().
-		Where(user2.UUID(uuid)).
+		Where(entUser.UUID(uuid)).
+		Only(ctx)
+}
+
+func (s *Store) GetUserByContext(ctx context.Context) (*ent.User, error) {
+	user := ctx.Value("user").(*ent.User)
+	if user == nil {
+		return nil, errors.New("no user in context")
+	}
+	return s.db.User.Query().
+		Where(entUser.UUID(user.UUID)).
 		Only(ctx)
 }
 
