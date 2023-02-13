@@ -6,7 +6,12 @@ import (
 	"net/http"
 	"time"
 
-	"entgo.io/ent/entc/integration/ent"
+	"github.com/MatthewFrisby/thesis-pieces/ent"
+
+	"github.com/go-chi/jwtauth/v5"
+
+	"github.com/MatthewFrisby/thesis-pieces/pkg/utils/auth"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	_ "github.com/mattn/go-sqlite3"
@@ -18,6 +23,7 @@ import (
 type Route interface {
 	Public(c chi.Router)
 	Private(c chi.Router)
+	Admin(c chi.Router)
 }
 
 func main() {
@@ -48,16 +54,24 @@ func main() {
 
 	public := r.Group(nil)
 
+	authMiddleware := auth.NewAuthMiddleware(db)
+
 	private := r.Group(nil)
-	private.Use()
+	private.Use(jwtauth.Verifier(auth.TokenAuth))
+	private.Use(authMiddleware.Private)
+
+	admin := r.Group(nil)
+	admin.Use(jwtauth.Verifier(auth.TokenAuth))
+	admin.Use(authMiddleware.Admin)
 
 	routes := []Route{
 		userStack.Router,
 	}
 
-	for _, r := range routes {
-		r.Private(private)
-		r.Public(public)
+	for _, route := range routes {
+		route.Public(public)
+		route.Private(private)
+		route.Admin(admin)
 	}
 	http.ListenAndServe(":8080", r)
 }

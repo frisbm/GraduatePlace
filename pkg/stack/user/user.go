@@ -1,8 +1,7 @@
 package user
 
 import (
-	"entgo.io/ent/entc/integration/ent"
-
+	"github.com/MatthewFrisby/thesis-pieces/ent"
 	userManager "github.com/MatthewFrisby/thesis-pieces/pkg/managers/user"
 	userRoutes "github.com/MatthewFrisby/thesis-pieces/pkg/routes/user"
 	userStore "github.com/MatthewFrisby/thesis-pieces/pkg/store/user"
