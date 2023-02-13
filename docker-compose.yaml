@@ -1,0 +1,31 @@
+version: "3.9"
+services:
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: db
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=db
+    ports:
+      - "5432:5432"
+  web:
+    build:
+      context: .
+    container_name: thesis-pieces
+    environment:
+      - DB_HOST=postgres-db
+      - DB_PORT=5432
+      - DB_NAME=db
+      - DB_USER=admin
+      - DB_PASSWORD=password
+      - DB_SSL_MODE=disable
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres-db
+    volumes:
+      - ./:/app
+      - cache:/go
+volumes:
+  cache:

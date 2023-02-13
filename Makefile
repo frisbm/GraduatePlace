@@ -11,9 +11,13 @@ install: # Install required dependencies for the project
 	  npm ci; \
 	  npm run build
 
-.PHONY: dev
-dev: # Run server with hot reloading using air
-	air --build.cmd  "go build -o ./tmp/main ./cmd/main.go"
+.PHONY: start
+start: # Run server and database with docker compose with hot reloading using air
+	docker compose up
+
+.PHONY: stop
+stop: # Stop running docker compose server and database
+	docker compose stop
 
 .PHONY: generate
 generate: # Generate the ent types required for this project

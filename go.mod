@@ -7,7 +7,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/jwtauth/v5 v5.1.0
 	github.com/google/uuid v1.3.0
-	github.com/mattn/go-sqlite3 v1.14.16
+	github.com/lib/pq v1.10.7
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.15.0
 	golang.org/x/crypto v0.6.0

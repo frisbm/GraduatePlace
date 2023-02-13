@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
+
+	"entgo.io/ent/dialect"
 
 	"github.com/MatthewFrisby/thesis-pieces/ent"
 
@@ -14,7 +17,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	_ "github.com/mattn/go-sqlite3"
+
+	_ "github.com/lib/pq"
 
 	"github.com/MatthewFrisby/thesis-pieces/pkg/config"
 	"github.com/MatthewFrisby/thesis-pieces/pkg/stack/user"
@@ -32,12 +36,21 @@ type Route interface {
 
 func main() {
 	// Create appConfig for further reading configuration variables
-	_ = config.NewConfig("config.json")
+	config := config.NewConfig("config.json")
 
-	// Open sqlite3 db using ent, enable foreign-keys
-	db, err := ent.Open("sqlite3", "file:store.db?_fk=1")
+	connectionString := fmt.Sprintf(
+		"host=%v port=%v user=%v dbname=%v password=%v sslmode=%v",
+		config.DBHost,
+		config.DBPort,
+		config.DBUser,
+		config.DBName,
+		config.DBPassword,
+		config.DBSSLMode,
+	)
+	// Open postgres
+	db, err := ent.Open(dialect.Postgres, connectionString)
 	if err != nil {
-		log.Fatalf("failed opening connection to sqlite: %v", err)
+		log.Fatalf("failed opening connection to postgres: %v", err)
 	}
 	defer db.Close()
 
