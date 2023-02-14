@@ -6,56 +6,48 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/MatthewFrisby/thesis-pieces/ent"
-	entUser "github.com/MatthewFrisby/thesis-pieces/ent/user"
+	"github.com/MatthewFrisby/thesis-pieces/pkg/store"
+
 	"github.com/MatthewFrisby/thesis-pieces/pkg/models/user"
 )
 
 type Store struct {
-	db *ent.Client
+	db store.Querier
 }
 
-func NewStore(db *ent.Client) *Store {
+func NewStore(db store.Querier) *Store {
 	return &Store{
 		db: db,
 	}
 }
 
 func (s *Store) CreateUser(ctx context.Context, registerUser user.RegisterUser) error {
-	_, err := s.db.User.Create().
-		SetEmail(registerUser.Email).
-		SetPassword(registerUser.Password).
-		SetUsername(registerUser.Username).
-		SetFirstName(registerUser.FirstName).
-		SetLastName(registerUser.LastName).
-		SetIsAdmin(false).
-		Save(ctx)
+	_, err := s.db.CreateUser(ctx, store.CreateUserParams{
+		Username:  registerUser.Username,
+		Email:     registerUser.Email,
+		Password:  registerUser.Password,
+		FirstName: registerUser.FirstName,
+		LastName:  registerUser.LastName,
+	})
 	return err
 }
 
-func (s *Store) GetUserForLogin(ctx context.Context, email string) ([]*ent.User, error) {
-	query := s.db.User.Query().Where(
-		entUser.Email(email),
-	)
-	return query.All(ctx)
+func (s *Store) GetUserFromEmail(ctx context.Context, email string) (*store.User, error) {
+	return s.db.GetUserFromEmail(ctx, email)
 }
 
-func (s *Store) GetUserByUUID(ctx context.Context, uuid uuid.UUID) (*ent.User, error) {
-	return s.db.User.Query().
-		Where(entUser.UUID(uuid)).
-		Only(ctx)
+func (s *Store) GetUserByUUID(ctx context.Context, uuid uuid.UUID) (*store.User, error) {
+	return s.db.GetUserFromUUID(ctx, uuid)
 }
 
-func (s *Store) GetUserByContext(ctx context.Context) (*ent.User, error) {
-	user := ctx.Value("user").(*ent.User)
+func (s *Store) GetUserByContext(ctx context.Context) (*store.User, error) {
+	user := ctx.Value("user").(*store.User)
 	if user == nil {
 		return nil, errors.New("no user in context")
 	}
-	return s.db.User.Query().
-		Where(entUser.UUID(user.UUID)).
-		Only(ctx)
+	return s.db.GetUserFromUUID(ctx, user.Uuid)
 }
 
-func (s *Store) GetUsers(ctx context.Context) ([]*ent.User, error) {
-	return s.db.User.Query().All(ctx)
+func (s *Store) GetUsers(ctx context.Context) ([]*store.User, error) {
+	return s.db.GetUsers(ctx)
 }

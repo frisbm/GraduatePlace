@@ -1,15 +1,15 @@
 package main
 
 import (
-	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"time"
 
-	"entgo.io/ent/dialect"
+	"github.com/pressly/goose/v3"
 
-	"github.com/MatthewFrisby/thesis-pieces/ent"
+	"github.com/MatthewFrisby/thesis-pieces/pkg/store"
 
 	"github.com/go-chi/jwtauth/v5"
 
@@ -48,16 +48,17 @@ func main() {
 		config.DBSSLMode,
 	)
 	// Open postgres
-	db, err := ent.Open(dialect.Postgres, connectionString)
+	database, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		log.Fatalf("failed opening connection to postgres: %v", err)
 	}
-	defer db.Close()
+	defer database.Close()
 
-	// Initialize store for handling interactions with the db
-	if err := db.Schema.Create(context.Background()); err != nil {
-		log.Fatalf("failed creating schema resources: %v", err)
+	if err := goose.Up(database, "database/migrations"); err != nil {
+		log.Fatalf("failed migrating with goose: %v", err)
 	}
+
+	db := store.New(database)
 
 	authService := auth.NewAuthService(config.JWTSecretKey)
 	r := chi.NewRouter()

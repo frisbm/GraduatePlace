@@ -1,0 +1,12 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "database/queries"
+    schema: "database/migrations"
+    gen:
+      go:
+        package: "store"
+        out: "pkg/store"
+        emit_result_struct_pointers: true
+        emit_interface: true
+        emit_empty_slices: true

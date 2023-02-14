@@ -5,16 +5,15 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/MatthewFrisby/thesis-pieces/ent"
-	"github.com/MatthewFrisby/thesis-pieces/ent/user"
+	"github.com/MatthewFrisby/thesis-pieces/pkg/store"
 )
 
 type AuthMiddleware struct {
-	db   *ent.Client
+	db   store.Querier
 	auth *AuthService
 }
 
-func NewAuthMiddleware(db *ent.Client, auth *AuthService) *AuthMiddleware {
+func NewAuthMiddleware(db store.Querier, auth *AuthService) *AuthMiddleware {
 	return &AuthMiddleware{
 		db:   db,
 		auth: auth,
@@ -38,14 +37,14 @@ func (am *AuthMiddleware) Private(next http.Handler) http.Handler {
 		}
 		ctx := context.Background()
 		// get the user from the database
-		entUser, err := am.db.User.Query().Where(user.UUID(*uuid)).Only(ctx)
+		user, err := am.db.GetUserFromUUID(ctx, *uuid)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(err.Error())
 			return
 		}
 		// set the user in the context
-		ctx = context.WithValue(r.Context(), "user", entUser)
+		ctx = context.WithValue(r.Context(), "user", user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -67,19 +66,19 @@ func (am *AuthMiddleware) Admin(next http.Handler) http.Handler {
 		}
 		ctx := context.Background()
 		// get the user from the database
-		entUser, err := am.db.User.Query().Where(user.UUID(*uuid)).Only(ctx)
+		user, err := am.db.GetUserFromUUID(ctx, *uuid)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(err.Error())
 			return
 		}
 
-		if !entUser.IsAdmin {
+		if !user.IsAdmin {
 			w.WriteHeader(http.StatusForbidden)
 			return
 		}
 		// set the user in the context
-		ctx = context.WithValue(r.Context(), "user", entUser)
+		ctx = context.WithValue(r.Context(), "user", user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
