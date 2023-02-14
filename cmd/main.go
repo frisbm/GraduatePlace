@@ -59,8 +59,7 @@ func main() {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
-	userStack := user.NewStack(db)
-
+	authService := auth.NewAuthService(config.JWTSecretKey)
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
@@ -71,15 +70,17 @@ func main() {
 
 	public := r.Group(nil)
 
-	authMiddleware := auth.NewAuthMiddleware(db)
+	authMiddleware := auth.NewAuthMiddleware(db, authService)
 
 	private := r.Group(nil)
-	private.Use(jwtauth.Verifier(auth.TokenAuth))
+	private.Use(jwtauth.Verifier(authService.GetTokenAuth()))
 	private.Use(authMiddleware.Private)
 
 	admin := r.Group(nil)
-	admin.Use(jwtauth.Verifier(auth.TokenAuth))
+	admin.Use(jwtauth.Verifier(authService.GetTokenAuth()))
 	admin.Use(authMiddleware.Admin)
+
+	userStack := user.NewStack(db, authService)
 
 	routes := []Route{
 		userStack.Router,

@@ -10,12 +10,14 @@ import (
 )
 
 type AuthMiddleware struct {
-	db *ent.Client
+	db   *ent.Client
+	auth *AuthService
 }
 
-func NewAuthMiddleware(db *ent.Client) *AuthMiddleware {
+func NewAuthMiddleware(db *ent.Client, auth *AuthService) *AuthMiddleware {
 	return &AuthMiddleware{
-		db: db,
+		db:   db,
+		auth: auth,
 	}
 }
 
@@ -28,7 +30,7 @@ func (am *AuthMiddleware) Private(next http.Handler) http.Handler {
 			return
 		}
 
-		uuid, err := ParseAccessToken(accessToken)
+		uuid, err := am.auth.ParseAccessToken(accessToken)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(err.Error())
@@ -57,7 +59,7 @@ func (am *AuthMiddleware) Admin(next http.Handler) http.Handler {
 			return
 		}
 
-		uuid, err := ParseAccessToken(accessToken)
+		uuid, err := am.auth.ParseAccessToken(accessToken)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(err.Error())

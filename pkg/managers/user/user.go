@@ -19,13 +19,20 @@ type Store interface {
 	GetUsers(ctx context.Context) ([]*ent.User, error)
 }
 
-type Manager struct {
-	store Store
+type Auth interface {
+	ParseRefreshToken(refreshToken string) (*uuid.UUID, error)
+	GenerateTokens(uuid string) (*user.AuthTokens, error)
 }
 
-func NewManager(store Store) *Manager {
+type Manager struct {
+	store Store
+	auth  Auth
+}
+
+func NewManager(store Store, auth Auth) *Manager {
 	return &Manager{
 		store: store,
+		auth:  auth,
 	}
 }
 
@@ -66,11 +73,11 @@ func (m *Manager) LoginUser(ctx context.Context, loginUser user.LoginUser) (*use
 		return nil, errors.New("invalid login information")
 	}
 
-	return auth.GenerateTokens(entUser.UUID.String())
+	return m.auth.GenerateTokens(entUser.UUID.String())
 }
 
 func (m *Manager) RefreshUser(ctx context.Context, refreshUser user.RefreshUser) (*user.AuthTokens, error) {
-	uuid, err := auth.ParseRefreshToken(refreshUser.RefreshToken)
+	uuid, err := m.auth.ParseRefreshToken(refreshUser.RefreshToken)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +87,7 @@ func (m *Manager) RefreshUser(ctx context.Context, refreshUser user.RefreshUser)
 		return nil, err
 	}
 
-	return auth.GenerateTokens(entUser.UUID.String())
+	return m.auth.GenerateTokens(entUser.UUID.String())
 }
 
 func (m *Manager) GetUser(ctx context.Context) (*user.GetUser, error) {

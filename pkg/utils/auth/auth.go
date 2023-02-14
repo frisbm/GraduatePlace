@@ -13,59 +13,54 @@ import (
 	"github.com/MatthewFrisby/thesis-pieces/pkg/models/user"
 )
 
-var TokenAuth *jwtauth.JWTAuth
-
-const SECRET_KEY = "key"
-
-func init() {
-	TokenAuth = jwtauth.New("HS256", []byte(SECRET_KEY), nil)
+type AuthService struct {
+	tokenAuth *jwtauth.JWTAuth
 }
 
-func HashPassword(password string) (string, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
-	if err != nil {
-		return "", err
+func NewAuthService(secretKey string) *AuthService {
+	tokenAuth := jwtauth.New("HS256", []byte(secretKey), nil)
+	return &AuthService{
+		tokenAuth: tokenAuth,
 	}
-	return string(hash), nil
 }
 
-func ValidatePasswordCorrect(hashedPassword, submittedPassword string) error {
-	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(submittedPassword))
+func (a *AuthService) GetTokenAuth() *jwtauth.JWTAuth {
+	return a.tokenAuth
 }
 
-func generateAccessToken(uuid string) (string, error) {
+func (a *AuthService) generateAccessToken(uuid string) (string, error) {
 	tokenMap := make(map[string]interface{})
 	tokenMap["uuid"] = uuid
 	tokenMap["kind"] = "access"
 	jwtauth.SetIssuedNow(tokenMap)
 	jwtauth.SetExpiryIn(tokenMap, time.Hour)
-	_, tokenString, err := TokenAuth.Encode(tokenMap)
+	_, tokenString, err := a.tokenAuth.Encode(tokenMap)
 	if err != nil {
 		return "", err
 	}
 	return tokenString, nil
 }
 
-func generateRefreshToken(uuid string) (string, error) {
+func (a *AuthService) generateRefreshToken(uuid string) (string, error) {
 	tokenMap := make(map[string]interface{})
 	tokenMap["uuid"] = uuid
 	tokenMap["kind"] = "refresh"
 
 	jwtauth.SetIssuedNow(tokenMap)
 	jwtauth.SetExpiryIn(tokenMap, time.Hour*24*30)
-	_, tokenString, err := TokenAuth.Encode(tokenMap)
+	_, tokenString, err := a.tokenAuth.Encode(tokenMap)
 	if err != nil {
 		return "", err
 	}
 	return tokenString, nil
 }
 
-func GenerateTokens(uuid string) (*user.AuthTokens, error) {
-	accessToken, err := generateAccessToken(uuid)
+func (a *AuthService) GenerateTokens(uuid string) (*user.AuthTokens, error) {
+	accessToken, err := a.generateAccessToken(uuid)
 	if err != nil {
 		return nil, err
 	}
-	refreshToken, err := generateRefreshToken(uuid)
+	refreshToken, err := a.generateRefreshToken(uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -79,8 +74,8 @@ var invalidRefreshTokenErr = errors.New("invalid refresh token")
 var invalidAccessTokenErr = errors.New("invalid access token")
 var accessTokenExpired = errors.New("access token expired")
 
-func ParseRefreshToken(refreshToken string) (*uuid.UUID, error) {
-	token, err := TokenAuth.Decode(refreshToken)
+func (a *AuthService) ParseRefreshToken(refreshToken string) (*uuid.UUID, error) {
+	token, err := a.tokenAuth.Decode(refreshToken)
 	if err != nil {
 		return nil, err
 	}
@@ -115,8 +110,8 @@ func ParseRefreshToken(refreshToken string) (*uuid.UUID, error) {
 	return &uuid, nil
 }
 
-func ParseAccessToken(accessToken string) (*uuid.UUID, error) {
-	token, err := TokenAuth.Decode(accessToken)
+func (a *AuthService) ParseAccessToken(accessToken string) (*uuid.UUID, error) {
+	token, err := a.tokenAuth.Decode(accessToken)
 	if err != nil {
 		return nil, err
 	}
@@ -149,4 +144,16 @@ func ParseAccessToken(accessToken string) (*uuid.UUID, error) {
 		return nil, invalidAccessTokenErr
 	}
 	return &uuid, nil
+}
+
+func HashPassword(password string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hash), nil
+}
+
+func ValidatePasswordCorrect(hashedPassword, submittedPassword string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(submittedPassword))
 }

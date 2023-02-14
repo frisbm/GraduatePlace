@@ -20,6 +20,7 @@ services:
       - DB_USER=admin
       - DB_PASSWORD=password
       - DB_SSL_MODE=disable
+      - JWT_SECRET_KEY=Zq4t7w!z%C*F-JaNcRfUjXn2r5u8x/A?
     ports:
       - "8080:8080"
     depends_on:
