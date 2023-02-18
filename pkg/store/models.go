@@ -5,10 +5,25 @@
 package store
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+type Document struct {
+	ID          int32
+	Uuid        uuid.UUID
+	UserID      int32
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	Title       string
+	Description string
+	Filepath    string
+	Filetype    string
+	Content     sql.NullString
+	Ts          interface{}
+}
 
 type User struct {
 	ID        int32
