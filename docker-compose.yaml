@@ -12,6 +12,7 @@ services:
   web:
     build:
       context: .
+    image: web
     container_name: thesis-pieces
     environment:
       - DB_HOST=postgres-db
@@ -27,6 +28,4 @@ services:
       - postgres-db
     volumes:
       - ./:/app
-      - cache:/go
-volumes:
-  cache:
+      - $HOME/golang/:/go
