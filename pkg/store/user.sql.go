@@ -17,7 +17,7 @@ INSERT INTO users (
 ) VALUES (
     $1, $2, $3, $4, $5, FALSE, gen_random_uuid()
 )
-RETURNING id, created_at, updated_at, username, email, password, first_name, last_name, is_admin, uuid
+RETURNING id, uuid, created_at, updated_at, username, email, password, first_name, last_name, is_admin
 `
 
 type CreateUserParams struct {
@@ -39,6 +39,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*User, 
 	var i User
 	err := row.Scan(
 		&i.ID,
+		&i.Uuid,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Username,
@@ -47,13 +48,12 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*User, 
 		&i.FirstName,
 		&i.LastName,
 		&i.IsAdmin,
-		&i.Uuid,
 	)
 	return &i, err
 }
 
 const getUserFromEmail = `-- name: GetUserFromEmail :one
-SELECT id, created_at, updated_at, username, email, password, first_name, last_name, is_admin, uuid FROM users
+SELECT id, uuid, created_at, updated_at, username, email, password, first_name, last_name, is_admin FROM users
 WHERE email = $1 LIMIT 1
 `
 
@@ -62,6 +62,7 @@ func (q *Queries) GetUserFromEmail(ctx context.Context, email string) (*User, er
 	var i User
 	err := row.Scan(
 		&i.ID,
+		&i.Uuid,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Username,
@@ -70,13 +71,12 @@ func (q *Queries) GetUserFromEmail(ctx context.Context, email string) (*User, er
 		&i.FirstName,
 		&i.LastName,
 		&i.IsAdmin,
-		&i.Uuid,
 	)
 	return &i, err
 }
 
 const getUserFromUUID = `-- name: GetUserFromUUID :one
-SELECT id, created_at, updated_at, username, email, password, first_name, last_name, is_admin, uuid FROM users
+SELECT id, uuid, created_at, updated_at, username, email, password, first_name, last_name, is_admin FROM users
 WHERE uuid = $1 LIMIT 1
 `
 
@@ -85,6 +85,7 @@ func (q *Queries) GetUserFromUUID(ctx context.Context, uuid uuid.UUID) (*User, e
 	var i User
 	err := row.Scan(
 		&i.ID,
+		&i.Uuid,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Username,
@@ -93,13 +94,12 @@ func (q *Queries) GetUserFromUUID(ctx context.Context, uuid uuid.UUID) (*User, e
 		&i.FirstName,
 		&i.LastName,
 		&i.IsAdmin,
-		&i.Uuid,
 	)
 	return &i, err
 }
 
 const getUsers = `-- name: GetUsers :many
-SELECT id, created_at, updated_at, username, email, password, first_name, last_name, is_admin, uuid FROM users
+SELECT id, uuid, created_at, updated_at, username, email, password, first_name, last_name, is_admin FROM users
 `
 
 func (q *Queries) GetUsers(ctx context.Context) ([]*User, error) {
@@ -113,6 +113,7 @@ func (q *Queries) GetUsers(ctx context.Context) ([]*User, error) {
 		var i User
 		if err := rows.Scan(
 			&i.ID,
+			&i.Uuid,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Username,
@@ -121,7 +122,6 @@ func (q *Queries) GetUsers(ctx context.Context) ([]*User, error) {
 			&i.FirstName,
 			&i.LastName,
 			&i.IsAdmin,
-			&i.Uuid,
 		); err != nil {
 			return nil, err
 		}

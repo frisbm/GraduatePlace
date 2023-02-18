@@ -11,7 +11,8 @@ import (
 )
 
 type User struct {
-	ID        int64
+	ID        int32
+	Uuid      uuid.UUID
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Username  string
@@ -20,5 +21,4 @@ type User struct {
 	FirstName string
 	LastName  string
 	IsAdmin   bool
-	Uuid      uuid.UUID
 }

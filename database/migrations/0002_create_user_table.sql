@@ -1,7 +1,8 @@
 -- +goose Up
 CREATE TABLE users
 (
-    id         BIGSERIAL PRIMARY KEY,
+    id         SERIAL PRIMARY KEY,
+    uuid       UUID                                NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     username   VARCHAR                             NOT NULL,
@@ -9,8 +10,7 @@ CREATE TABLE users
     password   VARCHAR                             NOT NULL,
     first_name VARCHAR                             NOT NULL,
     last_name  VARCHAR                             NOT NULL,
-    is_admin   BOOLEAN   DEFAULT FALSE             NOT NULL,
-    uuid       UUID                                NOT NULL
+    is_admin   BOOLEAN   DEFAULT FALSE             NOT NULL
 );
 
 CREATE UNIQUE INDEX users_username_key
@@ -25,7 +25,6 @@ CREATE TRIGGER user_set_updated_at
         users
     FOR EACH ROW
     EXECUTE PROCEDURE set_updated_at();
-
 
 -- +goose Down
 DROP TRIGGER user_set_updated_at ON users;
