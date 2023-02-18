@@ -27,4 +27,4 @@ time = true
 
 [misc]
 # Delete tmp directory on exit
-clean_on_exit = true
+clean_on_exit = false

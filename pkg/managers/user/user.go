@@ -3,13 +3,14 @@ package user
 import (
 	"context"
 
+	"github.com/MatthewFrisby/thesis-pieces/pkg/services/auth"
+
 	"github.com/MatthewFrisby/thesis-pieces/pkg/store"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 
 	"github.com/MatthewFrisby/thesis-pieces/pkg/models/user"
-	"github.com/MatthewFrisby/thesis-pieces/pkg/utils/auth"
 )
 
 type Store interface {

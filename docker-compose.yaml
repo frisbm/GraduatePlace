@@ -9,12 +9,29 @@ services:
       - POSTGRES_DB=db
     ports:
       - "5432:5432"
+    networks:
+      - shared
+  s3:
+    image: minio/minio
+    container_name: s3
+    command: server --console-address ":9090" /data
+    environment:
+      MINIO_ROOT_USER: user
+      MINIO_ROOT_PASSWORD: password
+    ports:
+      - "9000:9000"
+      - "9090:9090"
+    networks:
+      - shared
+    volumes:
+      - ./tmp/s3/:/data
   web:
     build:
       context: .
     image: web
     container_name: thesis-pieces
     environment:
+      - ENVIRONMENT=local
       - DB_HOST=postgres-db
       - DB_PORT=5432
       - DB_NAME=db
@@ -22,10 +39,21 @@ services:
       - DB_PASSWORD=password
       - DB_SSL_MODE=disable
       - JWT_SECRET_KEY=Zq4t7w!z%C*F-JaNcRfUjXn2r5u8x/A?
+      - AWS_ACCESS_KEY_ID=user
+      - AWS_SECRET_ACCESS_KEY=password
+      - AWS_ENDPOINT=http://s3:9000
     ports:
       - "8080:8080"
+    networks:
+      - shared
     depends_on:
       - postgres-db
+      - s3
     volumes:
       - ./:/app
       - $HOME/golang/:/go
+
+networks:
+  shared:
+    driver: bridge
+    name: shared

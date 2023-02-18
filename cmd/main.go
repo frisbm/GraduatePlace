@@ -1,11 +1,17 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/MatthewFrisby/thesis-pieces/pkg/services/s3"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 
 	"github.com/pressly/goose/v3"
 
@@ -13,7 +19,7 @@ import (
 
 	"github.com/go-chi/jwtauth/v5"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/utils/auth"
+	"github.com/MatthewFrisby/thesis-pieces/pkg/services/auth"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -35,9 +41,14 @@ type Route interface {
 }
 
 func main() {
-	// Create appConfig for further reading configuration variables
+	ctx := context.Background()
+
+	// Config
+	// ###################################################
 	config := config.NewConfig("config.json")
 
+	// Database Connection & Migration
+	// ###################################################
 	connectionString := fmt.Sprintf(
 		"host=%v port=%v user=%v dbname=%v password=%v sslmode=%v",
 		config.DBHost,
@@ -54,13 +65,50 @@ func main() {
 	}
 	defer database.Close()
 
-	if err := goose.Up(database, "database/migrations"); err != nil {
+	if err = goose.Up(database, "database/migrations"); err != nil {
 		log.Fatalf("failed migrating with goose: %v", err)
 	}
-
 	db := store.New(database)
 
+	// AWS Setup
+	// ###################################################
+	awsEndpoint := awsConfig.WithEndpointResolverWithOptions(
+		aws.EndpointResolverWithOptionsFunc(
+			func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+				// If ENVIRONMENT is local
+				if config.Environment == "local" {
+					return aws.Endpoint{
+						URL: config.AwsEndpoint,
+					}, nil
+				}
+				return aws.Endpoint{}, &aws.EndpointNotFoundError{}
+			},
+		),
+	)
+	awsCredentials := awsConfig.WithCredentialsProvider(
+		aws.CredentialsProviderFunc(
+			func(ctx context.Context) (aws.Credentials, error) {
+				return aws.Credentials{
+					AccessKeyID:     config.AwsAccessKeyId,
+					SecretAccessKey: config.AwsSecretAccessKey,
+				}, nil
+			},
+		),
+	)
+	cfg, err := awsConfig.LoadDefaultConfig(ctx, awsEndpoint, awsCredentials)
+	_ = s3.NewS3(cfg)
+
+	// Auth Service
+	// ###################################################
 	authService := auth.NewAuthService(config.JWTSecretKey)
+
+	// Create and Initialize "Stacks"
+	// Stacks tightly bind routes, manager, and stores
+	// ###################################################
+	userStack := user.NewStack(db, authService)
+
+	// Router Setup
+	// ###################################################
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
@@ -80,8 +128,6 @@ func main() {
 	admin := r.Group(nil)
 	admin.Use(jwtauth.Verifier(authService.GetTokenAuth()))
 	admin.Use(authMiddleware.Admin)
-
-	userStack := user.NewStack(db, authService)
 
 	routes := []Route{
 		userStack.Router,

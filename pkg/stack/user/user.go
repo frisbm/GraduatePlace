@@ -3,9 +3,9 @@ package user
 import (
 	userManager "github.com/MatthewFrisby/thesis-pieces/pkg/managers/user"
 	userRoutes "github.com/MatthewFrisby/thesis-pieces/pkg/routes/user"
+	"github.com/MatthewFrisby/thesis-pieces/pkg/services/auth"
 	"github.com/MatthewFrisby/thesis-pieces/pkg/store"
 	userStore "github.com/MatthewFrisby/thesis-pieces/pkg/store/user"
-	"github.com/MatthewFrisby/thesis-pieces/pkg/utils/auth"
 )
 
 type Stack struct {
