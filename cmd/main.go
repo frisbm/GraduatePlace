@@ -115,7 +115,8 @@ func main() {
 	// Create and Initialize "Stacks"
 	// Stacks tightly bind routes, manager, and stores
 	// ###################################################
-	userStack := user.NewStack(db, authService)
+	userStack := user.NewStack(db, s3, authService)
+	documentStack := document.NewStack(db, s3)
 
 	// Router Setup
 	// ###################################################
@@ -141,6 +142,7 @@ func main() {
 
 	routes := []Route{
 		userStack.Router,
+		documentStack.Router,
 	}
 
 	for _, route := range routes {
