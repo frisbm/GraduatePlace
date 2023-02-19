@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/MatthewFrisby/thesis-pieces/pkg/services/s3"
@@ -32,6 +35,7 @@ import (
 
 const (
 	API_PATH = "/api"
+	TIMEOUT  = 10 * time.Second
 )
 
 type Route interface {
@@ -41,7 +45,7 @@ type Route interface {
 }
 
 func main() {
-	ctx := context.Background()
+	ctx, ctxCancel := context.WithCancel(context.Background())
 
 	// Config
 	// ###################################################
@@ -115,7 +119,7 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	r.Use(middleware.Timeout(60 * time.Second))
+	r.Use(middleware.Timeout(TIMEOUT))
 
 	public := r.Group(nil)
 
@@ -141,5 +145,37 @@ func main() {
 
 	router := chi.NewRouter()
 	router.Mount(API_PATH, r)
-	http.ListenAndServe(":8080", router)
+
+	// Start server with graceful shutdown
+	// ###################################################
+	server := &http.Server{Addr: ":8080", Handler: router}
+
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	go func() {
+		<-sig
+		log.Println("Hi")
+		shutdownCtx, _ := context.WithTimeout(ctx, TIMEOUT)
+
+		go func() {
+			<-shutdownCtx.Done()
+			if shutdownCtx.Err() == context.DeadlineExceeded {
+				log.Fatal("forcing server shutdown due to graceful timeout...")
+			}
+		}()
+
+		err = server.Shutdown(shutdownCtx)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println("shutting down server...")
+		ctxCancel()
+	}()
+
+	err = server.ListenAndServe()
+	if err != nil && err != http.ErrServerClosed {
+		log.Fatal(err)
+	}
+
+	<-ctx.Done()
 }
