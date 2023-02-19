@@ -3,6 +3,8 @@ package user
 import (
 	"context"
 
+	"github.com/MatthewFrisby/thesis-pieces/pkg/utils"
+
 	"github.com/MatthewFrisby/thesis-pieces/pkg/services/auth"
 
 	"github.com/MatthewFrisby/thesis-pieces/pkg/store"
@@ -17,8 +19,11 @@ type Store interface {
 	CreateUser(ctx context.Context, registerUser user.RegisterUser) error
 	GetUserFromEmail(ctx context.Context, email string) (*store.User, error)
 	GetUserByUUID(ctx context.Context, uuid uuid.UUID) (*store.User, error)
-	GetUserByContext(ctx context.Context) (*store.User, error)
 	GetUsers(ctx context.Context) ([]*store.User, error)
+}
+
+type S3 interface {
+	CreateBucket(ctx context.Context, bucketName string) error
 }
 
 type Auth interface {
@@ -28,12 +33,14 @@ type Auth interface {
 
 type Manager struct {
 	store Store
+	s3    S3
 	auth  Auth
 }
 
-func NewManager(store Store, auth Auth) *Manager {
+func NewManager(store Store, s3 S3, auth Auth) *Manager {
 	return &Manager{
 		store: store,
+		s3:    s3,
 		auth:  auth,
 	}
 }
@@ -50,7 +57,13 @@ func (m *Manager) RegisterUser(ctx context.Context, registerUser user.RegisterUs
 		return errors.New("error hashing password")
 	}
 	registerUser.Password = hashedPassword
-	return m.store.CreateUser(ctx, registerUser)
+
+	err = m.store.CreateUser(ctx, registerUser)
+	if err != nil {
+		return err
+	}
+
+	return m.s3.CreateBucket(ctx, registerUser.Username)
 }
 
 func (m *Manager) LoginUser(ctx context.Context, loginUser user.LoginUser) (*user.AuthTokens, error) {
@@ -83,7 +96,11 @@ func (m *Manager) RefreshUser(ctx context.Context, refreshUser user.RefreshUser)
 }
 
 func (m *Manager) GetUser(ctx context.Context) (*user.GetUser, error) {
-	result, err := m.store.GetUserByContext(ctx)
+	userCtx, err := utils.GetUserFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result, err := m.store.GetUserByUUID(ctx, userCtx.Uuid)
 	if err != nil {
 		return nil, err
 	}

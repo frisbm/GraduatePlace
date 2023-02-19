@@ -11,11 +11,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/MatthewFrisby/thesis-pieces/pkg/stack/document"
+
 	"github.com/MatthewFrisby/thesis-pieces/pkg/services/s3"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	awsConfig "github.com/aws/aws-sdk-go-v2/config"
-
 	"github.com/pressly/goose/v3"
 
 	"github.com/MatthewFrisby/thesis-pieces/pkg/store"
@@ -76,31 +76,37 @@ func main() {
 
 	// AWS Setup
 	// ###################################################
-	awsEndpoint := awsConfig.WithEndpointResolverWithOptions(
-		aws.EndpointResolverWithOptionsFunc(
-			func(service, region string, options ...interface{}) (aws.Endpoint, error) {
-				// If ENVIRONMENT is local
-				if config.Environment == "local" {
-					return aws.Endpoint{
-						URL: config.AwsEndpoint,
-					}, nil
-				}
-				return aws.Endpoint{}, &aws.EndpointNotFoundError{}
-			},
-		),
-	)
-	awsCredentials := awsConfig.WithCredentialsProvider(
-		aws.CredentialsProviderFunc(
-			func(ctx context.Context) (aws.Credentials, error) {
-				return aws.Credentials{
-					AccessKeyID:     config.AwsAccessKeyId,
-					SecretAccessKey: config.AwsSecretAccessKey,
+	defaultRegion := "us-east-1"
+	awsEndpoint := aws.EndpointResolverWithOptionsFunc(
+		func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+			// If ENVIRONMENT is local
+			if config.Environment == "local" {
+				return aws.Endpoint{
+					PartitionID:       "aws",
+					URL:               config.AwsEndpoint,
+					SigningRegion:     defaultRegion,
+					HostnameImmutable: true,
 				}, nil
-			},
-		),
+			}
+			return aws.Endpoint{}, &aws.EndpointNotFoundError{}
+		},
 	)
-	cfg, err := awsConfig.LoadDefaultConfig(ctx, awsEndpoint, awsCredentials)
-	_ = s3.NewS3(cfg)
+	awsCredentials := aws.CredentialsProviderFunc(
+		func(ctx context.Context) (aws.Credentials, error) {
+			return aws.Credentials{
+				AccessKeyID:     config.AwsAccessKeyId,
+				SecretAccessKey: config.AwsSecretAccessKey,
+			}, nil
+		},
+	)
+
+	cfg := aws.Config{
+		Region:                      defaultRegion,
+		Credentials:                 awsCredentials,
+		EndpointResolverWithOptions: awsEndpoint,
+	}
+
+	s3 := s3.NewS3(cfg)
 
 	// Auth Service
 	// ###################################################

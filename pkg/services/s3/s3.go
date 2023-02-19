@@ -1,6 +1,9 @@
 package s3
 
 import (
+	"bytes"
+	"context"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
@@ -14,4 +17,20 @@ func NewS3(config aws.Config) *S3 {
 	return &S3{
 		client: client,
 	}
+}
+
+func (s *S3) CreateBucket(ctx context.Context, bucketName string) error {
+	_, err := s.client.CreateBucket(ctx, &s3.CreateBucketInput{
+		Bucket: aws.String(bucketName),
+	})
+	return err
+}
+
+func (s *S3) UploadFile(ctx context.Context, bucketName, filename string, file []byte) error {
+	_, err := s.client.PutObject(ctx, &s3.PutObjectInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(filename),
+		Body:   bytes.NewReader(file),
+	})
+	return err
 }
