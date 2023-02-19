@@ -13,9 +13,9 @@ import (
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
-    username, email, password, first_name, last_name, is_admin, uuid
+    uuid, username, email, password, first_name, last_name, is_admin
 ) VALUES (
-    $1, $2, $3, $4, $5, FALSE, gen_random_uuid()
+    gen_random_uuid(), $1, $2, $3, $4, $5, FALSE
 )
 RETURNING id, uuid, created_at, updated_at, username, email, password, first_name, last_name, is_admin
 `

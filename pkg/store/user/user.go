@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
 
@@ -38,14 +37,6 @@ func (s *Store) GetUserFromEmail(ctx context.Context, email string) (*store.User
 
 func (s *Store) GetUserByUUID(ctx context.Context, uuid uuid.UUID) (*store.User, error) {
 	return s.db.GetUserFromUUID(ctx, uuid)
-}
-
-func (s *Store) GetUserByContext(ctx context.Context) (*store.User, error) {
-	user := ctx.Value("user").(*store.User)
-	if user == nil {
-		return nil, errors.New("no user in context")
-	}
-	return s.db.GetUserFromUUID(ctx, user.Uuid)
 }
 
 func (s *Store) GetUsers(ctx context.Context) ([]*store.User, error) {

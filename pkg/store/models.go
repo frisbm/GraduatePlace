@@ -5,7 +5,6 @@
 package store
 
 import (
-	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,9 +18,9 @@ type Document struct {
 	UpdatedAt   time.Time
 	Title       string
 	Description string
-	Filepath    string
+	Filename    string
 	Filetype    string
-	Content     sql.NullString
+	Content     *string
 	Ts          interface{}
 }
 

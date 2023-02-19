@@ -35,7 +35,7 @@ func (am *AuthMiddleware) Private(next http.Handler) http.Handler {
 			json.NewEncoder(w).Encode(err.Error())
 			return
 		}
-		ctx := context.Background()
+		ctx := r.Context()
 		// get the user from the database
 		user, err := am.db.GetUserFromUUID(ctx, *uuid)
 		if err != nil {
@@ -44,7 +44,7 @@ func (am *AuthMiddleware) Private(next http.Handler) http.Handler {
 			return
 		}
 		// set the user in the context
-		ctx = context.WithValue(r.Context(), "user", user)
+		ctx = context.WithValue(ctx, "user", user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -64,7 +64,7 @@ func (am *AuthMiddleware) Admin(next http.Handler) http.Handler {
 			json.NewEncoder(w).Encode(err.Error())
 			return
 		}
-		ctx := context.Background()
+		ctx := r.Context()
 		// get the user from the database
 		user, err := am.db.GetUserFromUUID(ctx, *uuid)
 		if err != nil {
@@ -78,7 +78,7 @@ func (am *AuthMiddleware) Admin(next http.Handler) http.Handler {
 			return
 		}
 		// set the user in the context
-		ctx = context.WithValue(r.Context(), "user", user)
+		ctx = context.WithValue(ctx, "user", user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

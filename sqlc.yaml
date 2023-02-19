@@ -10,3 +10,14 @@ sql:
         emit_result_struct_pointers: true
         emit_interface: true
         emit_empty_slices: true
+        overrides:
+          - db_type: 'pg_catalog.varchar'
+            go_type:
+              type: 'string'
+              pointer: true
+            nullable: true
+          - db_type: 'pg_catalog.varchar'
+            go_type:
+              type: 'string'
+              pointer: false
+            nullable: false

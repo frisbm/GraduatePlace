@@ -11,6 +11,7 @@ import (
 )
 
 type Querier interface {
+	CreateDocument(ctx context.Context, arg CreateDocumentParams) (*Document, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (*User, error)
 	GetUserFromEmail(ctx context.Context, email string) (*User, error)
 	GetUserFromUUID(ctx context.Context, uuid uuid.UUID) (*User, error)
