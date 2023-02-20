@@ -19,7 +19,7 @@ func NewStore(db store.Querier) *Store {
 }
 
 func (s *Store) CreateDocument(ctx context.Context, uploadDocument document.UploadDocument) (*store.Document, error) {
-	return s.db.CreateDocument(ctx, store.CreateDocumentParams{
+	doc, err := s.db.CreateDocument(ctx, store.CreateDocumentParams{
 		UserID:      uploadDocument.UserID,
 		Title:       uploadDocument.Title,
 		Description: uploadDocument.Description,
@@ -27,4 +27,16 @@ func (s *Store) CreateDocument(ctx context.Context, uploadDocument document.Uplo
 		Filetype:    uploadDocument.FileType,
 		Content:     uploadDocument.Content,
 	})
+	if err != nil {
+		return nil, err
+	}
+	_, err = s.db.SetDocumentHistoryUserId(ctx, store.SetDocumentHistoryUserIdParams{
+		ID:            doc.ID,
+		HistoryTime:   doc.UpdatedAt,
+		HistoryUserID: &uploadDocument.UserID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return doc, nil
 }
