@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"mime"
 	"net/http"
+	"strings"
+
+	"github.com/pkg/errors"
 )
 
 type RouteWithContext func(context.Context, http.ResponseWriter, *http.Request)
@@ -33,6 +35,27 @@ type Body interface {
 	SetFileType(filetype string)
 }
 
+func getFiletypeFromFilename(filename string) (string, error) {
+	parts := strings.Split(filename, ".")
+	if len(parts) <= 1 {
+		return "", errors.New("improper file name, file must have extension")
+	}
+
+	extension := parts[len(parts)-1]
+	switch strings.ToUpper(extension) {
+	case "PDF":
+		return "PDF", nil
+	case "DOC":
+		return "DOC", nil
+	case "DOCX":
+		return "DOCX", nil
+	case "TXT":
+		return "TXT", nil
+	default:
+		return "", errors.New("wrong filetype")
+	}
+}
+
 func ParseMultiPartFormWithFileAndBody[T Body](req *http.Request, body T) error {
 	var (
 		file     []byte
@@ -44,7 +67,6 @@ func ParseMultiPartFormWithFileAndBody[T Body](req *http.Request, body T) error 
 		return err
 	}
 
-	filetype, _, err = mime.ParseMediaType(req.Header.Get("Content-Type"))
 	if err != nil {
 		return err
 	}
@@ -65,6 +87,10 @@ func ParseMultiPartFormWithFileAndBody[T Body](req *http.Request, body T) error 
 				return err
 			}
 			filename = part.FileName()
+			filetype, err = getFiletypeFromFilename(filename)
+			if err != nil {
+				return err
+			}
 		}
 
 		if part.FormName() == "body" {
