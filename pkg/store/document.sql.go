@@ -7,6 +7,7 @@ package store
 
 import (
 	"context"
+	"time"
 )
 
 const createDocument = `-- name: CreateDocument :one
@@ -49,6 +50,41 @@ func (q *Queries) CreateDocument(ctx context.Context, arg CreateDocumentParams) 
 		&i.Filetype,
 		&i.Content,
 		&i.Ts,
+	)
+	return &i, err
+}
+
+const setDocumentHistoryUserId = `-- name: SetDocumentHistoryUserId :one
+UPDATE documents_history
+SET history_user_id = $3
+WHERE id=$1 AND history_time=$2
+RETURNING id, uuid, user_id, created_at, updated_at, title, description, filename, filetype, content, ts, history_time, history_user_id, operation
+`
+
+type SetDocumentHistoryUserIdParams struct {
+	ID            int32
+	HistoryTime   time.Time
+	HistoryUserID *int32
+}
+
+func (q *Queries) SetDocumentHistoryUserId(ctx context.Context, arg SetDocumentHistoryUserIdParams) (*DocumentsHistory, error) {
+	row := q.db.QueryRowContext(ctx, setDocumentHistoryUserId, arg.ID, arg.HistoryTime, arg.HistoryUserID)
+	var i DocumentsHistory
+	err := row.Scan(
+		&i.ID,
+		&i.Uuid,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Title,
+		&i.Description,
+		&i.Filename,
+		&i.Filetype,
+		&i.Content,
+		&i.Ts,
+		&i.HistoryTime,
+		&i.HistoryUserID,
+		&i.Operation,
 	)
 	return &i, err
 }

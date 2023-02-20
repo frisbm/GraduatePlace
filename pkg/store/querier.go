@@ -16,6 +16,8 @@ type Querier interface {
 	GetUserFromEmail(ctx context.Context, email string) (*User, error)
 	GetUserFromUUID(ctx context.Context, uuid uuid.UUID) (*User, error)
 	GetUsers(ctx context.Context) ([]*User, error)
+	SetDocumentHistoryUserId(ctx context.Context, arg SetDocumentHistoryUserIdParams) (*DocumentsHistory, error)
+	SetUserHistoryUserId(ctx context.Context, arg SetUserHistoryUserIdParams) (*UsersHistory, error)
 }
 
 var _ Querier = (*Queries)(nil)

@@ -7,6 +7,7 @@ package store
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -134,4 +135,38 @@ func (q *Queries) GetUsers(ctx context.Context) ([]*User, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const setUserHistoryUserId = `-- name: SetUserHistoryUserId :one
+UPDATE users_history
+SET history_user_id = $3
+WHERE id=$1 AND history_time=$2
+RETURNING id, uuid, created_at, updated_at, username, email, password, first_name, last_name, is_admin, history_time, history_user_id, operation
+`
+
+type SetUserHistoryUserIdParams struct {
+	ID            int32
+	HistoryTime   time.Time
+	HistoryUserID *int32
+}
+
+func (q *Queries) SetUserHistoryUserId(ctx context.Context, arg SetUserHistoryUserIdParams) (*UsersHistory, error) {
+	row := q.db.QueryRowContext(ctx, setUserHistoryUserId, arg.ID, arg.HistoryTime, arg.HistoryUserID)
+	var i UsersHistory
+	err := row.Scan(
+		&i.ID,
+		&i.Uuid,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Username,
+		&i.Email,
+		&i.Password,
+		&i.FirstName,
+		&i.LastName,
+		&i.IsAdmin,
+		&i.HistoryTime,
+		&i.HistoryUserID,
+		&i.Operation,
+	)
+	return &i, err
 }

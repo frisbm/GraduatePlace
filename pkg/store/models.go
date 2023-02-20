@@ -24,6 +24,23 @@ type Document struct {
 	Ts          interface{}
 }
 
+type DocumentsHistory struct {
+	ID            int32
+	Uuid          uuid.UUID
+	UserID        int32
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	Title         string
+	Description   string
+	Filename      string
+	Filetype      string
+	Content       *string
+	Ts            interface{}
+	HistoryTime   time.Time
+	HistoryUserID *int32
+	Operation     *string
+}
+
 type User struct {
 	ID        int32
 	Uuid      uuid.UUID
@@ -35,4 +52,20 @@ type User struct {
 	FirstName string
 	LastName  string
 	IsAdmin   bool
+}
+
+type UsersHistory struct {
+	ID            int32
+	Uuid          uuid.UUID
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	Username      string
+	Email         string
+	Password      string
+	FirstName     string
+	LastName      string
+	IsAdmin       bool
+	HistoryTime   time.Time
+	HistoryUserID *int32
+	Operation     *string
 }
