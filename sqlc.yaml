@@ -21,3 +21,13 @@ sql:
               type: 'string'
               pointer: false
             nullable: false
+          - db_type: 'pg_catalog.int4'
+            go_type:
+              type: 'int32'
+              pointer: true
+            nullable: true
+          - db_type: 'pg_catalog.int4'
+            go_type:
+              type: 'int32'
+              pointer: false
+            nullable: false
