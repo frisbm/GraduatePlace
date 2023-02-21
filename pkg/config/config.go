@@ -18,6 +18,9 @@ type Config struct {
 	AwsAccessKeyId     string `mapstructure:"AWS_ACCESS_KEY_ID"`
 	AwsSecretAccessKey string `mapstructure:"AWS_SECRET_ACCESS_KEY"`
 	AwsEndpoint        string `mapstructure:"AWS_ENDPOINT"`
+	RedisHost          string `mapstructure:"REDIS_HOST"`
+	RedisPort          string `mapstructure:"REDIS_PORT"`
+	RedisPassword      string `mapstructure:"REDIS_PASSWORD"`
 }
 
 func bindEnv() {
@@ -32,6 +35,9 @@ func bindEnv() {
 	viper.BindEnv("AWS_ACCESS_KEY_ID")
 	viper.BindEnv("AWS_SECRET_ACCESS_KEY")
 	viper.BindEnv("AWS_ENDPOINT")
+	viper.BindEnv("REDIS_HOST")
+	viper.BindEnv("REDIS_PORT")
+	viper.BindEnv("REDIS_PASSWORD")
 }
 
 func NewConfig(filepath string) *Config {

@@ -1,6 +1,6 @@
 version: "3.9"
 services:
-  postgres-db:
+  postgresql:
     image: postgres:15-alpine
     container_name: db
     environment:
@@ -25,14 +25,66 @@ services:
       - shared
     volumes:
       - ./tmp/s3/:/data
-  web:
+  redis:
+    image: "redis:alpine"
+    container_name: redis
+    command: redis-server --requirepass password
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+    networks:
+      - shared
+  asynqmon:
+    image: hibiken/asynqmon
+    container_name: asynqmon
+    environment:
+      - PORT=3000
+      - REDIS_ADDR=redis:6379
+      - REDIS_PASSWORD=password
+    depends_on:
+      - redis
+    ports:
+      - "3000:3000"
+    networks:
+      - shared
+  async:
     build:
       context: .
-    image: web
-    container_name: thesis-pieces
+    image: async
+    container_name: async
+    command: air --build.cmd "go build -o ./tmp/async ./cmd/async/main.go" --build.bin "./tmp/async"
     environment:
       - ENVIRONMENT=local
-      - DB_HOST=postgres-db
+      - DB_HOST=postgresql
+      - DB_PORT=5432
+      - DB_NAME=db
+      - DB_USER=admin
+      - DB_PASSWORD=password
+      - DB_SSL_MODE=disable
+      - AWS_ACCESS_KEY_ID=user
+      - AWS_SECRET_ACCESS_KEY=password
+      - AWS_ENDPOINT=http://s3:9000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=password
+    networks:
+      - shared
+    depends_on:
+      - postgresql
+      - redis
+    volumes:
+      - ./:/app
+      - $HOME/golang/:/go
+  api:
+    build:
+      context: .
+    image: api
+    container_name: api
+    command: air --build.cmd "go build -o ./tmp/api ./cmd/api/main.go" --build.bin "./tmp/api"
+    environment:
+      - ENVIRONMENT=local
+      - DB_HOST=postgresql
       - DB_PORT=5432
       - DB_NAME=db
       - DB_USER=admin
@@ -42,13 +94,18 @@ services:
       - AWS_ACCESS_KEY_ID=user
       - AWS_SECRET_ACCESS_KEY=password
       - AWS_ENDPOINT=http://s3:9000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=password
     ports:
       - "8080:8080"
     networks:
       - shared
     depends_on:
-      - postgres-db
+      - postgresql
       - s3
+      - redis
+      - async
     volumes:
       - ./:/app
       - $HOME/golang/:/go

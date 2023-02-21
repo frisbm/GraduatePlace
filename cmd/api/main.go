@@ -11,6 +11,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/hibiken/asynq"
+
+	"github.com/MatthewFrisby/thesis-pieces/pkg/tasks"
+
 	"github.com/MatthewFrisby/thesis-pieces/pkg/stack/document"
 
 	"github.com/MatthewFrisby/thesis-pieces/pkg/services/s3"
@@ -74,6 +78,17 @@ func main() {
 	}
 	db := store.New(database)
 
+	// Asynq,Redis, & Task Manager Setup
+	// ###################################################
+	asynqClient := asynq.NewClient(
+		asynq.RedisClientOpt{
+			Addr:     fmt.Sprintf("%v:%v", config.RedisHost, config.RedisPort),
+			Password: config.RedisPassword,
+		},
+	)
+	defer asynqClient.Close()
+	taskManager := tasks.NewTaskManager(asynqClient)
+
 	// AWS Setup
 	// ###################################################
 	defaultRegion := "us-east-1"
@@ -115,7 +130,7 @@ func main() {
 	// Create and Initialize "Stacks"
 	// Stacks tightly bind routes, manager, and stores
 	// ###################################################
-	userStack := user.NewStack(db, s3, authService)
+	userStack := user.NewStack(db, s3, taskManager, authService)
 	documentStack := document.NewStack(db, s3)
 
 	// Router Setup

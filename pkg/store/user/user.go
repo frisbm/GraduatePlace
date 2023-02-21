@@ -20,15 +20,14 @@ func NewStore(db store.Querier) *Store {
 	}
 }
 
-func (s *Store) CreateUser(ctx context.Context, registerUser user.RegisterUser) error {
-	_, err := s.db.CreateUser(ctx, store.CreateUserParams{
+func (s *Store) CreateUser(ctx context.Context, registerUser user.RegisterUser) (*store.User, error) {
+	return s.db.CreateUser(ctx, store.CreateUserParams{
 		Username:  registerUser.Username,
 		Email:     registerUser.Email,
 		Password:  registerUser.Password,
 		FirstName: registerUser.FirstName,
 		LastName:  registerUser.LastName,
 	})
-	return err
 }
 
 func (s *Store) GetUserFromEmail(ctx context.Context, email string) (*store.User, error) {

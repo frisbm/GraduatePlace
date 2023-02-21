@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 
+	"github.com/MatthewFrisby/thesis-pieces/pkg/constants"
 	"github.com/MatthewFrisby/thesis-pieces/pkg/utils"
 
 	"github.com/MatthewFrisby/thesis-pieces/pkg/services/auth"
@@ -16,7 +17,7 @@ import (
 )
 
 type Store interface {
-	CreateUser(ctx context.Context, registerUser user.RegisterUser) error
+	CreateUser(ctx context.Context, registerUser user.RegisterUser) (*store.User, error)
 	GetUserFromEmail(ctx context.Context, email string) (*store.User, error)
 	GetUserByUUID(ctx context.Context, uuid uuid.UUID) (*store.User, error)
 	GetUsers(ctx context.Context) ([]*store.User, error)
@@ -24,6 +25,10 @@ type Store interface {
 
 type S3 interface {
 	CreateBucket(ctx context.Context, bucketName string) error
+}
+
+type Tasks interface {
+	SendUserEmailTask(userID int32, tmplID string) error
 }
 
 type Auth interface {
@@ -34,13 +39,15 @@ type Auth interface {
 type Manager struct {
 	store Store
 	s3    S3
+	tasks Tasks
 	auth  Auth
 }
 
-func NewManager(store Store, s3 S3, auth Auth) *Manager {
+func NewManager(store Store, s3 S3, tasks Tasks, auth Auth) *Manager {
 	return &Manager{
 		store: store,
 		s3:    s3,
+		tasks: tasks,
 		auth:  auth,
 	}
 }
@@ -58,12 +65,17 @@ func (m *Manager) RegisterUser(ctx context.Context, registerUser user.RegisterUs
 	}
 	registerUser.Password = hashedPassword
 
-	err = m.store.CreateUser(ctx, registerUser)
+	result, err := m.store.CreateUser(ctx, registerUser)
 	if err != nil {
 		return err
 	}
 
-	return m.s3.CreateBucket(ctx, registerUser.Username)
+	err = m.tasks.SendUserEmailTask(result.ID, constants.EMAIL_TEMPLATE_VERIFY_EMAIL)
+	if err != nil {
+		return err
+	}
+
+	return m.s3.CreateBucket(ctx, result.Username)
 }
 
 func (m *Manager) LoginUser(ctx context.Context, loginUser user.LoginUser) (*user.AuthTokens, error) {
