@@ -14,7 +14,7 @@ RETURNING *;
 
 -- name: SetDocumentContent :one
 UPDATE documents
-SET content = to_tsvector($2)
+SET content = $2
 WHERE id=$1 RETURNING *;
 
 -- name: GetDocument :one

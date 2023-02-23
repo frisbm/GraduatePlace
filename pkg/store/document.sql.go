@@ -7,7 +7,6 @@ package store
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 )
 
@@ -81,17 +80,17 @@ func (q *Queries) GetDocument(ctx context.Context, id int32) (*Document, error) 
 
 const setDocumentContent = `-- name: SetDocumentContent :one
 UPDATE documents
-SET content = to_tsvector($2)
+SET content = $2
 WHERE id=$1 RETURNING id, uuid, user_id, created_at, updated_at, title, description, filename, filetype, content, ts
 `
 
 type SetDocumentContentParams struct {
-	ID         int32
-	ToTsvector json.RawMessage
+	ID      int32
+	Content *string
 }
 
 func (q *Queries) SetDocumentContent(ctx context.Context, arg SetDocumentContentParams) (*Document, error) {
-	row := q.db.QueryRowContext(ctx, setDocumentContent, arg.ID, arg.ToTsvector)
+	row := q.db.QueryRowContext(ctx, setDocumentContent, arg.ID, arg.Content)
 	var i Document
 	err := row.Scan(
 		&i.ID,
