@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/constants"
 	"github.com/MatthewFrisby/thesis-pieces/pkg/utils"
 
 	"github.com/MatthewFrisby/thesis-pieces/pkg/services/auth"
@@ -28,7 +27,6 @@ type S3 interface {
 }
 
 type Tasks interface {
-	SendUserEmailTask(userID int32, tmplID string) error
 }
 
 type Auth interface {
@@ -66,11 +64,6 @@ func (m *Manager) RegisterUser(ctx context.Context, registerUser user.RegisterUs
 	registerUser.Password = hashedPassword
 
 	result, err := m.store.CreateUser(ctx, registerUser)
-	if err != nil {
-		return err
-	}
-
-	err = m.tasks.SendUserEmailTask(result.ID, constants.EMAIL_TEMPLATE_VERIFY_EMAIL)
 	if err != nil {
 		return err
 	}

@@ -7,6 +7,7 @@ package store
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 )
 
@@ -37,6 +38,60 @@ func (q *Queries) CreateDocument(ctx context.Context, arg CreateDocumentParams) 
 		arg.Filetype,
 		arg.Content,
 	)
+	var i Document
+	err := row.Scan(
+		&i.ID,
+		&i.Uuid,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Title,
+		&i.Description,
+		&i.Filename,
+		&i.Filetype,
+		&i.Content,
+		&i.Ts,
+	)
+	return &i, err
+}
+
+const getDocument = `-- name: GetDocument :one
+SELECT id, uuid, user_id, created_at, updated_at, title, description, filename, filetype, content, ts FROM documents
+WHERE id=$1
+`
+
+func (q *Queries) GetDocument(ctx context.Context, id int32) (*Document, error) {
+	row := q.db.QueryRowContext(ctx, getDocument, id)
+	var i Document
+	err := row.Scan(
+		&i.ID,
+		&i.Uuid,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Title,
+		&i.Description,
+		&i.Filename,
+		&i.Filetype,
+		&i.Content,
+		&i.Ts,
+	)
+	return &i, err
+}
+
+const setDocumentContent = `-- name: SetDocumentContent :one
+UPDATE documents
+SET content = to_tsvector($2)
+WHERE id=$1 RETURNING id, uuid, user_id, created_at, updated_at, title, description, filename, filetype, content, ts
+`
+
+type SetDocumentContentParams struct {
+	ID         int32
+	ToTsvector json.RawMessage
+}
+
+func (q *Queries) SetDocumentContent(ctx context.Context, arg SetDocumentContentParams) (*Document, error) {
+	row := q.db.QueryRowContext(ctx, setDocumentContent, arg.ID, arg.ToTsvector)
 	var i Document
 	err := row.Scan(
 		&i.ID,

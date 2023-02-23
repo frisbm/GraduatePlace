@@ -19,15 +19,21 @@ type S3 interface {
 	UploadFile(ctx context.Context, bucketName, filename string, file []byte) error
 }
 
+type Tasks interface {
+	ProcessDocumentTask(documentId int32, bucket string) error
+}
+
 type Manager struct {
 	store Store
 	s3    S3
+	tasks Tasks
 }
 
-func NewManager(store Store, s3 S3) *Manager {
+func NewManager(store Store, s3 S3, tasks Tasks) *Manager {
 	return &Manager{
 		store: store,
 		s3:    s3,
+		tasks: tasks,
 	}
 }
 
@@ -41,11 +47,16 @@ func (m *Manager) UploadDocument(ctx context.Context, uploadDocument document.Up
 	if len(uploadDocument.File) == 0 {
 		return errors.New("file bytes not found")
 	}
+
 	err = m.s3.UploadFile(ctx, userCtx.Username, uploadDocument.FileName, uploadDocument.File)
 	if err != nil {
 		return err
 	}
-	_, err = m.store.CreateDocument(ctx, uploadDocument)
 
-	return err
+	doc, err := m.store.CreateDocument(ctx, uploadDocument)
+	if err != nil {
+		return err
+	}
+
+	return m.tasks.ProcessDocumentTask(doc.ID, userCtx.Username)
 }

@@ -11,9 +11,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/hibiken/asynq"
-
 	"github.com/MatthewFrisby/thesis-pieces/pkg/tasks"
+
+	"github.com/hibiken/asynq"
 
 	"github.com/MatthewFrisby/thesis-pieces/pkg/stack/document"
 
@@ -131,7 +131,7 @@ func main() {
 	// Stacks tightly bind routes, manager, and stores
 	// ###################################################
 	userStack := user.NewStack(db, s3, taskManager, authService)
-	documentStack := document.NewStack(db, s3)
+	documentStack := document.NewStack(db, s3, taskManager)
 
 	// Router Setup
 	// ###################################################

@@ -1,9 +1,18 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+
+	"github.com/MatthewFrisby/thesis-pieces/pkg/services/s3"
+	"github.com/MatthewFrisby/thesis-pieces/pkg/store/document"
+	"github.com/MatthewFrisby/thesis-pieces/pkg/tasks/handlers"
+
+	"github.com/MatthewFrisby/thesis-pieces/pkg/tasks"
 
 	"github.com/MatthewFrisby/thesis-pieces/pkg/constants"
 
@@ -12,7 +21,6 @@ import (
 
 	"github.com/MatthewFrisby/thesis-pieces/pkg/config"
 	"github.com/MatthewFrisby/thesis-pieces/pkg/store"
-	"github.com/MatthewFrisby/thesis-pieces/pkg/tasks"
 )
 
 func main() {
@@ -38,7 +46,42 @@ func main() {
 	}
 	defer database.Close()
 
-	_ = store.New(database)
+	store := store.New(database)
+	dbStore := document.NewStore(store)
+
+	// AWS Setup
+	// ###################################################
+	defaultRegion := "us-east-1"
+	awsEndpoint := aws.EndpointResolverWithOptionsFunc(
+		func(service, region string, options ...interface{}) (aws.Endpoint, error) {
+			// If ENVIRONMENT is local
+			if config.Environment == "local" {
+				return aws.Endpoint{
+					PartitionID:       "aws",
+					URL:               config.AwsEndpoint,
+					SigningRegion:     defaultRegion,
+					HostnameImmutable: true,
+				}, nil
+			}
+			return aws.Endpoint{}, &aws.EndpointNotFoundError{}
+		},
+	)
+	awsCredentials := aws.CredentialsProviderFunc(
+		func(ctx context.Context) (aws.Credentials, error) {
+			return aws.Credentials{
+				AccessKeyID:     config.AwsAccessKeyId,
+				SecretAccessKey: config.AwsSecretAccessKey,
+			}, nil
+		},
+	)
+
+	cfg := aws.Config{
+		Region:                      defaultRegion,
+		Credentials:                 awsCredentials,
+		EndpointResolverWithOptions: awsEndpoint,
+	}
+
+	s3 := s3.NewS3(cfg)
 
 	// Asynq & Redis Setup
 	// ###################################################
@@ -56,7 +99,7 @@ func main() {
 		},
 	)
 	mux := asynq.NewServeMux()
-	mux.HandleFunc(tasks.TypeEmailDelivery, tasks.HandleSendUserEmailTask)
+	mux.Handle(tasks.ProcessDocumentTask, handlers.NewDocumentProcessor(dbStore, s3))
 
 	if err := srv.Run(mux); err != nil {
 		log.Fatalf("could not run server: %v", err)

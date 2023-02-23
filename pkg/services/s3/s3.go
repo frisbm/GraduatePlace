@@ -3,6 +3,7 @@ package s3
 import (
 	"bytes"
 	"context"
+	"io"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -33,4 +34,16 @@ func (s *S3) UploadFile(ctx context.Context, bucketName, filename string, file [
 		Body:   bytes.NewReader(file),
 	})
 	return err
+}
+
+func (s *S3) GetObject(ctx context.Context, bucketName, filename string) ([]byte, error) {
+	obj, err := s.client.GetObject(ctx, &s3.GetObjectInput{
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(filename),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return io.ReadAll(obj.Body)
 }

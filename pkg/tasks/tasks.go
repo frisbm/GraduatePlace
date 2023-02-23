@@ -58,7 +58,7 @@ func (o *Options) toAsync() []asynq.Option {
 }
 
 const (
-	TypeEmailDelivery = "email:deliver"
+	ProcessDocumentTask = "document:process"
 )
 
 type Client interface {

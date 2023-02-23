@@ -40,3 +40,22 @@ func (s *Store) CreateDocument(ctx context.Context, uploadDocument document.Uplo
 	}
 	return doc, nil
 }
+
+func (s *Store) SetDocumentContent(ctx context.Context, id int32, content string) (*store.Document, error) {
+	doc, err := s.db.SetDocumentContent(ctx, store.SetDocumentContentParams{
+		ID:         id,
+		ToTsvector: []byte(content),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return doc, nil
+}
+
+func (s *Store) GetDocument(ctx context.Context, id int32) (*store.Document, error) {
+	doc, err := s.db.GetDocument(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return doc, nil
+}
