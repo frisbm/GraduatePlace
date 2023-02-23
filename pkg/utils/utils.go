@@ -15,3 +15,7 @@ func GetUserFromContext(ctx context.Context) (*store.User, error) {
 	}
 	return user, nil
 }
+
+func Ptr[T any](t T) *T {
+	return &t
+}

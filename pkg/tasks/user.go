@@ -5,9 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
-
-	"github.com/MatthewFrisby/thesis-pieces/pkg/constants"
 
 	"github.com/hibiken/asynq"
 )
@@ -18,24 +15,11 @@ type EmailDeliveryPayload struct {
 }
 
 func (t *TaskManager) SendUserEmailTask(userID int32, tmplID string) error {
-	payload, err := json.Marshal(EmailDeliveryPayload{UserID: userID, TemplateID: tmplID})
-	if err != nil {
-		return err
+	payload := EmailDeliveryPayload{
+		UserID:     userID,
+		TemplateID: tmplID,
 	}
-	task := asynq.NewTask(
-		TypeEmailDelivery,
-		payload,
-		asynq.MaxRetry(1),
-		asynq.Timeout(time.Minute),
-		asynq.Retention(24*time.Hour),
-		asynq.Queue(constants.HIGH_PRIORITY_QUEUE),
-	)
-	info, err := t.client.Enqueue(task)
-	if err != nil {
-		log.Fatalf("could not enqueue task: %v", err)
-	}
-	log.Printf("enqueued task: id=%s queue=%s", info.ID, info.Queue)
-	return nil
+	return t.NewTask(TypeEmailDelivery, &payload, DefaultOptions)
 }
 
 func HandleSendUserEmailTask(ctx context.Context, task *asynq.Task) error {
