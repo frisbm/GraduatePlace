@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/MatthewFrisby/thesis-pieces/pkg/constants"
+
 	"github.com/pkg/errors"
 )
 
@@ -104,4 +106,19 @@ func ParseMultiPartFormWithFileAndBody[T Body](req *http.Request, body T) error 
 	body.SetFileName(filename)
 	body.SetFileType(filetype)
 	return nil
+}
+
+func SanitizePagination(limit, offset int32) (int32, int32) {
+	if limit < constants.MIN_LIMIT {
+		limit = constants.MIN_LIMIT
+	} else if limit > constants.MAX_LIMIT {
+		limit = constants.MIN_LIMIT
+	}
+
+	if offset < constants.MIN_OFFSET {
+		offset = constants.MIN_OFFSET
+	} else if offset > constants.MAX_OFFSET {
+		offset = constants.MAX_OFFSET
+	}
+	return limit, offset
 }
