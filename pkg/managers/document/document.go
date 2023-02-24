@@ -3,6 +3,8 @@ package document
 import (
 	"context"
 
+	"github.com/MatthewFrisby/thesis-pieces/pkg/models/pagination"
+
 	"github.com/MatthewFrisby/thesis-pieces/pkg/store"
 
 	"github.com/MatthewFrisby/thesis-pieces/pkg/models/document"
@@ -13,6 +15,7 @@ import (
 
 type Store interface {
 	CreateDocument(ctx context.Context, uploadDocument document.UploadDocument) (*store.Document, error)
+	SearchDocuments(ctx context.Context, searchDocuments document.SearchDocuments) ([]*store.SearchDocumentsRow, error)
 }
 
 type S3 interface {
@@ -59,4 +62,38 @@ func (m *Manager) UploadDocument(ctx context.Context, uploadDocument document.Up
 	}
 
 	return m.tasks.ProcessDocumentTask(doc.ID, userCtx.Username)
+}
+
+func (m *Manager) SearchDocuments(ctx context.Context, searchDocuments document.SearchDocuments) (*pagination.Pagination[document.SearchDocumentsResult], error) {
+	results, err := m.store.SearchDocuments(ctx, searchDocuments)
+	if err != nil {
+		return nil, err
+	}
+
+	data := make([]*document.SearchDocumentsResult, len(results))
+	for i, result := range results {
+		resultData := document.SearchDocumentsResult{
+			Uuid:        result.Uuid,
+			CreatedAt:   result.CreatedAt,
+			UpdatedAt:   result.UpdatedAt,
+			Title:       result.Title,
+			Description: result.Description,
+			Filename:    result.Filename,
+			Filetype:    result.Filetype,
+			Username:    result.Username,
+			Rank:        result.Rank,
+		}
+		data[i] = &resultData
+	}
+	searchResults := pagination.Pagination[document.SearchDocumentsResult]{
+		Data:   data,
+		Limit:  searchDocuments.Limit,
+		Offset: searchDocuments.Offset,
+		Count:  0,
+	}
+
+	if len(results) > 0 {
+		searchResults.Count = int32(results[0].Count)
+	}
+	return &searchResults, nil
 }
