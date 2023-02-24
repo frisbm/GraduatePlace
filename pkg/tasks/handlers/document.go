@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/hibiken/asynq"
 	"github.com/pkg/errors"
@@ -51,7 +52,7 @@ func (d *DocumentProcessor) ProcessTask(ctx context.Context, t *asynq.Task) erro
 
 	var content string
 	if document.Filetype == "TXT" {
-		content = string(object)
+		content = strings.ToValidUTF8(string(object), "")
 	}
 
 	_, err = d.store.SetDocumentContent(ctx, p.DocumentId, content)
