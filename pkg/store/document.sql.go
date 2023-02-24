@@ -8,6 +8,8 @@ package store
 import (
 	"context"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const createDocument = `-- name: CreateDocument :one
@@ -16,7 +18,7 @@ INSERT INTO documents (
 ) VALUES (
     gen_random_uuid(), $1, $2, $3, $4, $5, $6
 )
-RETURNING id, uuid, user_id, created_at, updated_at, title, description, filename, filetype, content, ts
+RETURNING id, uuid, user_id, created_at, updated_at, title, description, filename, filetype, content, content_hash
 `
 
 type CreateDocumentParams struct {
@@ -49,13 +51,13 @@ func (q *Queries) CreateDocument(ctx context.Context, arg CreateDocumentParams) 
 		&i.Filename,
 		&i.Filetype,
 		&i.Content,
-		&i.Ts,
+		&i.ContentHash,
 	)
 	return &i, err
 }
 
 const getDocument = `-- name: GetDocument :one
-SELECT id, uuid, user_id, created_at, updated_at, title, description, filename, filetype, content, ts FROM documents
+SELECT id, uuid, user_id, created_at, updated_at, title, description, filename, filetype, content, content_hash FROM documents
 WHERE id=$1
 `
 
@@ -73,15 +75,97 @@ func (q *Queries) GetDocument(ctx context.Context, id int32) (*Document, error) 
 		&i.Filename,
 		&i.Filetype,
 		&i.Content,
-		&i.Ts,
+		&i.ContentHash,
 	)
 	return &i, err
+}
+
+const searchDocuments = `-- name: SearchDocuments :many
+WITH matching_search_results AS (
+    SELECT
+        document_id,
+        ts_rank_cd(ts, query, 32) AS document_rank,
+        count(*) AS count
+    FROM documents_search, to_tsquery('english', $3) query
+    WHERE query @@ ts
+    group by 1, 2
+    ORDER BY document_rank DESC
+    LIMIT 1000
+)
+SELECT documents.uuid,
+       documents.created_at,
+       documents.updated_at,
+       documents.title,
+       documents.description,
+       documents.filename,
+       documents.filetype,
+       users.username,
+       matching_search_results.document_rank AS rank,
+       matching_search_results.count
+FROM documents
+JOIN matching_search_results ON documents.id = matching_search_results.document_id
+JOIN users ON users.id = documents.user_id
+ORDER BY rank DESC
+LIMIT $1 OFFSET $2
+`
+
+type SearchDocumentsParams struct {
+	Limit  int32
+	Offset int32
+	Query  string
+}
+
+type SearchDocumentsRow struct {
+	Uuid        uuid.UUID
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	Title       string
+	Description string
+	Filename    string
+	Filetype    string
+	Username    string
+	Rank        float32
+	Count       int64
+}
+
+func (q *Queries) SearchDocuments(ctx context.Context, arg SearchDocumentsParams) ([]*SearchDocumentsRow, error) {
+	rows, err := q.db.QueryContext(ctx, searchDocuments, arg.Limit, arg.Offset, arg.Query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*SearchDocumentsRow{}
+	for rows.Next() {
+		var i SearchDocumentsRow
+		if err := rows.Scan(
+			&i.Uuid,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Title,
+			&i.Description,
+			&i.Filename,
+			&i.Filetype,
+			&i.Username,
+			&i.Rank,
+			&i.Count,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const setDocumentContent = `-- name: SetDocumentContent :one
 UPDATE documents
 SET content = $2
-WHERE id=$1 RETURNING id, uuid, user_id, created_at, updated_at, title, description, filename, filetype, content, ts
+WHERE id=$1 RETURNING id, uuid, user_id, created_at, updated_at, title, description, filename, filetype, content, content_hash
 `
 
 type SetDocumentContentParams struct {
@@ -103,7 +187,7 @@ func (q *Queries) SetDocumentContent(ctx context.Context, arg SetDocumentContent
 		&i.Filename,
 		&i.Filetype,
 		&i.Content,
-		&i.Ts,
+		&i.ContentHash,
 	)
 	return &i, err
 }
@@ -112,7 +196,7 @@ const setDocumentHistoryUserId = `-- name: SetDocumentHistoryUserId :one
 UPDATE documents_history
 SET history_user_id = $3
 WHERE id=$1 AND history_time=$2
-RETURNING id, uuid, user_id, created_at, updated_at, title, description, filename, filetype, content, ts, history_time, history_user_id, operation
+RETURNING id, uuid, user_id, created_at, updated_at, title, description, filename, filetype, content, content_hash, history_time, history_user_id, operation
 `
 
 type SetDocumentHistoryUserIdParams struct {
@@ -135,7 +219,7 @@ func (q *Queries) SetDocumentHistoryUserId(ctx context.Context, arg SetDocumentH
 		&i.Filename,
 		&i.Filetype,
 		&i.Content,
-		&i.Ts,
+		&i.ContentHash,
 		&i.HistoryTime,
 		&i.HistoryUserID,
 		&i.Operation,

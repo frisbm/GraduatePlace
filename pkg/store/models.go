@@ -21,7 +21,7 @@ type Document struct {
 	Filename    string
 	Filetype    string
 	Content     *string
-	Ts          interface{}
+	ContentHash *string
 }
 
 type DocumentsHistory struct {
@@ -35,10 +35,19 @@ type DocumentsHistory struct {
 	Filename      string
 	Filetype      string
 	Content       *string
-	Ts            interface{}
+	ContentHash   *string
 	HistoryTime   time.Time
 	HistoryUserID *int32
 	Operation     *string
+}
+
+type DocumentsSearch struct {
+	ID         int32
+	Uuid       uuid.UUID
+	DocumentID int32
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+	Ts         interface{}
 }
 
 type User struct {
