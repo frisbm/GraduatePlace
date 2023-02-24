@@ -1,4 +1,5 @@
 -- +goose Up
+-- Users table
 CREATE TABLE users
 (
     id         SERIAL PRIMARY KEY,
@@ -13,29 +14,33 @@ CREATE TABLE users
     is_admin   BOOLEAN   DEFAULT FALSE             NOT NULL
 );
 
+-- Users history table
 CREATE TABLE users_history
 (
-    id              INT                   NOT NULL,
-    uuid            UUID                  NOT NULL,
-    created_at      TIMESTAMP             NOT NULL,
-    updated_at      TIMESTAMP             NOT NULL,
-    username        VARCHAR               NOT NULL,
-    email           VARCHAR               NOT NULL,
-    password        VARCHAR               NOT NULL,
-    first_name      VARCHAR               NOT NULL,
-    last_name       VARCHAR               NOT NULL,
-    is_admin        BOOLEAN NOT NULL,
-    history_time    TIMESTAMP             NOT NULL,
+    id              INT       NOT NULL,
+    uuid            UUID      NOT NULL,
+    created_at      TIMESTAMP NOT NULL,
+    updated_at      TIMESTAMP NOT NULL,
+    username        VARCHAR   NOT NULL,
+    email           VARCHAR   NOT NULL,
+    password        VARCHAR   NOT NULL,
+    first_name      VARCHAR   NOT NULL,
+    last_name       VARCHAR   NOT NULL,
+    is_admin        BOOLEAN   NOT NULL,
+    history_time    TIMESTAMP NOT NULL,
     history_user_id INT,
     operation       VARCHAR
 );
 
+-- Unique index on username
 CREATE UNIQUE INDEX users_username_key
     ON users (username);
 
+-- Unique index on email
 CREATE UNIQUE INDEX users_email_key
     ON users (email);
 
+-- Add trigger on users to set updated_at on update
 CREATE TRIGGER user_set_updated_at
     BEFORE UPDATE
     ON
@@ -43,6 +48,7 @@ CREATE TRIGGER user_set_updated_at
     FOR EACH ROW
 EXECUTE PROCEDURE set_updated_at();
 
+-- Function trigger for updating users_history
 -- +goose StatementBegin
 CREATE OR REPLACE FUNCTION process_users_history() RETURNS TRIGGER AS
 $$
@@ -57,6 +63,7 @@ END;
 $$ LANGUAGE plpgsql;
 -- +goose StatementEnd
 
+-- Apply trigger to users
 CREATE TRIGGER users_history
     AFTER INSERT OR UPDATE OR DELETE
     ON users
