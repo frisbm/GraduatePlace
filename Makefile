@@ -21,6 +21,11 @@ generate: # Generate sqlc
 	sqlc generate
 	$(MAKE) fmt
 
+.PHONY: reset
+reset: # Reset data containers and their volumes for clean instance
+	docker compose rm s3 postgresql -f || true
+	rm -rf ./tmp/s3/
+
 .PHONY: fmt
 fmt: # Format go code
 	goimports -local github.com/MatthewFrisby -w ./
