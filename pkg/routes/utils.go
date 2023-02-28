@@ -109,13 +109,13 @@ func ParseMultiPartFormWithFileAndBody[T Body](req *http.Request, body T) error 
 }
 
 func SanitizePagination(limit, offset int32) (int32, int32) {
-	if limit < constants.MIN_LIMIT {
+	if limit <= 0 {
 		limit = constants.MIN_LIMIT
 	} else if limit > constants.MAX_LIMIT {
 		limit = constants.MIN_LIMIT
 	}
 
-	if offset < constants.MIN_OFFSET {
+	if offset <= 0 {
 		offset = constants.MIN_OFFSET
 	} else if offset > constants.MAX_OFFSET {
 		offset = constants.MAX_OFFSET

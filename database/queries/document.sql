@@ -25,9 +25,8 @@ WHERE id=$1;
 WITH matching_search_results AS (
     SELECT
         document_id,
-        ts_rank_cd(ts, query, 32) AS document_rank,
-        count(*) AS count
-    FROM documents_search, to_tsquery('english', @query) query
+        ts_rank_cd(ts, query, 32) AS document_rank
+    FROM documents_search, websearch_to_tsquery('english', @query) query
     WHERE query @@ ts
     group by 1, 2
     ORDER BY document_rank DESC
@@ -42,7 +41,7 @@ SELECT documents.uuid,
        documents.filetype,
        users.username,
        matching_search_results.document_rank AS rank,
-       matching_search_results.count
+       (SELECT COUNT('') FROM matching_search_results) AS count
 FROM documents
 JOIN matching_search_results ON documents.id = matching_search_results.document_id
 JOIN users ON users.id = documents.user_id
