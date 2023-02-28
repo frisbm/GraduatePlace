@@ -13,11 +13,8 @@ import (
 )
 
 const createDocument = `-- name: CreateDocument :one
-INSERT INTO documents (
-    uuid, user_id, title, description, filename, filetype, content
-) VALUES (
-    gen_random_uuid(), $1, $2, $3, $4, $5, $6
-)
+INSERT INTO documents (uuid, user_id, title, description, filename, filetype, content)
+VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6)
 RETURNING id, uuid, user_id, created_at, updated_at, title, description, filename, filetype, content, content_hash
 `
 
@@ -57,8 +54,9 @@ func (q *Queries) CreateDocument(ctx context.Context, arg CreateDocumentParams) 
 }
 
 const getDocument = `-- name: GetDocument :one
-SELECT id, uuid, user_id, created_at, updated_at, title, description, filename, filetype, content, content_hash FROM documents
-WHERE id=$1
+SELECT id, uuid, user_id, created_at, updated_at, title, description, filename, filetype, content, content_hash
+FROM documents
+WHERE id = $1
 `
 
 func (q *Queries) GetDocument(ctx context.Context, id int32) (*Document, error) {
@@ -81,16 +79,14 @@ func (q *Queries) GetDocument(ctx context.Context, id int32) (*Document, error) 
 }
 
 const searchDocuments = `-- name: SearchDocuments :many
-WITH matching_search_results AS (
-    SELECT
-        document_id,
-        ts_rank_cd(ts, query, 32) AS document_rank
-    FROM documents_search, websearch_to_tsquery('english', $3) query
-    WHERE query @@ ts
-    group by 1, 2
-    ORDER BY document_rank DESC
-    LIMIT 1000
-)
+WITH matching_search_results AS (SELECT document_id,
+                                        ts_rank_cd(ts, query, 32) AS document_rank
+                                 FROM documents_search,
+                                      websearch_to_tsquery('english', $3) query
+                                 WHERE query @@ ts
+                                 group by 1, 2
+                                 ORDER BY document_rank DESC
+                                 LIMIT 1000)
 SELECT documents.uuid,
        documents.created_at,
        documents.updated_at,
@@ -99,11 +95,11 @@ SELECT documents.uuid,
        documents.filename,
        documents.filetype,
        users.username,
-       matching_search_results.document_rank AS rank,
+       matching_search_results.document_rank           AS rank,
        (SELECT COUNT('') FROM matching_search_results) AS count
 FROM documents
-JOIN matching_search_results ON documents.id = matching_search_results.document_id
-JOIN users ON users.id = documents.user_id
+         JOIN matching_search_results ON documents.id = matching_search_results.document_id
+         JOIN users ON users.id = documents.user_id
 ORDER BY rank DESC
 LIMIT $1 OFFSET $2
 `
@@ -164,7 +160,8 @@ func (q *Queries) SearchDocuments(ctx context.Context, arg SearchDocumentsParams
 const setDocumentContent = `-- name: SetDocumentContent :one
 UPDATE documents
 SET content = $2
-WHERE id=$1 RETURNING id, uuid, user_id, created_at, updated_at, title, description, filename, filetype, content, content_hash
+WHERE id = $1
+RETURNING id, uuid, user_id, created_at, updated_at, title, description, filename, filetype, content, content_hash
 `
 
 type SetDocumentContentParams struct {
@@ -194,7 +191,8 @@ func (q *Queries) SetDocumentContent(ctx context.Context, arg SetDocumentContent
 const setDocumentHistoryUserId = `-- name: SetDocumentHistoryUserId :one
 UPDATE documents_history
 SET history_user_id = $3
-WHERE id=$1 AND history_time=$2
+WHERE id = $1
+  AND history_time = $2
 RETURNING id, uuid, user_id, created_at, updated_at, title, description, filename, filetype, content, content_hash, history_time, history_user_id, operation
 `
 

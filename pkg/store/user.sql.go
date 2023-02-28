@@ -13,11 +13,8 @@ import (
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (
-    uuid, username, email, password, first_name, last_name, is_admin
-) VALUES (
-    gen_random_uuid(), $1, $2, $3, $4, $5, FALSE
-)
+INSERT INTO users (uuid, username, email, password, first_name, last_name, is_admin)
+VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, FALSE)
 RETURNING id, uuid, created_at, updated_at, username, email, password, first_name, last_name, is_admin
 `
 
@@ -54,8 +51,10 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*User, 
 }
 
 const getUserFromEmail = `-- name: GetUserFromEmail :one
-SELECT id, uuid, created_at, updated_at, username, email, password, first_name, last_name, is_admin FROM users
-WHERE email = $1 LIMIT 1
+SELECT id, uuid, created_at, updated_at, username, email, password, first_name, last_name, is_admin
+FROM users
+WHERE email = $1
+LIMIT 1
 `
 
 func (q *Queries) GetUserFromEmail(ctx context.Context, email string) (*User, error) {
@@ -77,8 +76,10 @@ func (q *Queries) GetUserFromEmail(ctx context.Context, email string) (*User, er
 }
 
 const getUserFromUUID = `-- name: GetUserFromUUID :one
-SELECT id, uuid, created_at, updated_at, username, email, password, first_name, last_name, is_admin FROM users
-WHERE uuid = $1 LIMIT 1
+SELECT id, uuid, created_at, updated_at, username, email, password, first_name, last_name, is_admin
+FROM users
+WHERE uuid = $1
+LIMIT 1
 `
 
 func (q *Queries) GetUserFromUUID(ctx context.Context, uuid uuid.UUID) (*User, error) {
@@ -100,7 +101,8 @@ func (q *Queries) GetUserFromUUID(ctx context.Context, uuid uuid.UUID) (*User, e
 }
 
 const getUsers = `-- name: GetUsers :many
-SELECT id, uuid, created_at, updated_at, username, email, password, first_name, last_name, is_admin FROM users
+SELECT id, uuid, created_at, updated_at, username, email, password, first_name, last_name, is_admin
+FROM users
 `
 
 func (q *Queries) GetUsers(ctx context.Context) ([]*User, error) {
@@ -140,7 +142,8 @@ func (q *Queries) GetUsers(ctx context.Context) ([]*User, error) {
 const setUserHistoryUserId = `-- name: SetUserHistoryUserId :one
 UPDATE users_history
 SET history_user_id = $3
-WHERE id=$1 AND history_time=$2
+WHERE id = $1
+  AND history_time = $2
 RETURNING id, uuid, created_at, updated_at, username, email, password, first_name, last_name, is_admin, history_time, history_user_id, operation
 `
 
