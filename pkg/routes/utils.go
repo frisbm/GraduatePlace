@@ -47,8 +47,6 @@ func getFiletypeFromFilename(filename string) (string, error) {
 	switch strings.ToUpper(extension) {
 	case "PDF":
 		return "PDF", nil
-	case "DOC":
-		return "DOC", nil
 	case "DOCX":
 		return "DOCX", nil
 	case "TXT":
