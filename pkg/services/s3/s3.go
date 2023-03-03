@@ -36,7 +36,7 @@ func (s *S3) UploadFile(ctx context.Context, bucketName, filename string, file [
 	return err
 }
 
-func (s *S3) GetObject(ctx context.Context, bucketName, filename string) ([]byte, error) {
+func (s *S3) GetObject(ctx context.Context, bucketName, filename string) (io.ReadCloser, error) {
 	obj, err := s.client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(filename),
@@ -45,5 +45,5 @@ func (s *S3) GetObject(ctx context.Context, bucketName, filename string) ([]byte
 	if err != nil {
 		return nil, err
 	}
-	return io.ReadAll(obj.Body)
+	return obj.Body, nil
 }

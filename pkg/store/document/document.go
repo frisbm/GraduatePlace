@@ -41,10 +41,10 @@ func (s *Store) CreateDocument(ctx context.Context, uploadDocument document.Uplo
 	return doc, nil
 }
 
-func (s *Store) SetDocumentContent(ctx context.Context, id int32, content string) (*store.Document, error) {
+func (s *Store) SetDocumentContent(ctx context.Context, id int32, content *string) (*store.Document, error) {
 	doc, err := s.db.SetDocumentContent(ctx, store.SetDocumentContentParams{
 		ID:      id,
-		Content: &content,
+		Content: content,
 	})
 	if err != nil {
 		return nil, err
