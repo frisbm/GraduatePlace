@@ -142,19 +142,19 @@ func (q *Queries) GetUsers(ctx context.Context) ([]*User, error) {
 const setUserHistoryUserId = `-- name: SetUserHistoryUserId :one
 UPDATE users_history
 SET history_user_id = $3
-WHERE id = $1
+WHERE user_id = $1
   AND history_time = $2
-RETURNING id, uuid, created_at, updated_at, username, email, password, first_name, last_name, is_admin, history_time, history_user_id, operation
+RETURNING id, uuid, created_at, updated_at, username, email, password, first_name, last_name, is_admin, user_id, history_time, history_user_id, operation
 `
 
 type SetUserHistoryUserIdParams struct {
-	ID            int32
+	UserID        int32
 	HistoryTime   time.Time
 	HistoryUserID *int32
 }
 
 func (q *Queries) SetUserHistoryUserId(ctx context.Context, arg SetUserHistoryUserIdParams) (*UsersHistory, error) {
-	row := q.db.QueryRowContext(ctx, setUserHistoryUserId, arg.ID, arg.HistoryTime, arg.HistoryUserID)
+	row := q.db.QueryRowContext(ctx, setUserHistoryUserId, arg.UserID, arg.HistoryTime, arg.HistoryUserID)
 	var i UsersHistory
 	err := row.Scan(
 		&i.ID,
@@ -167,6 +167,7 @@ func (q *Queries) SetUserHistoryUserId(ctx context.Context, arg SetUserHistoryUs
 		&i.FirstName,
 		&i.LastName,
 		&i.IsAdmin,
+		&i.UserID,
 		&i.HistoryTime,
 		&i.HistoryUserID,
 		&i.Operation,

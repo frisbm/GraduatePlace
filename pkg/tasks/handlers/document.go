@@ -2,17 +2,19 @@ package handlers
 
 import (
 	"bytes"
-	"code.sajari.com/docconv"
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/ledongthuc/pdf"
 	"io"
 	"strings"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/utils"
+	"code.sajari.com/docconv"
+	"github.com/ledongthuc/pdf"
+
 	"github.com/hibiken/asynq"
 	"github.com/pkg/errors"
+
+	"github.com/MatthewFrisby/thesis-pieces/pkg/utils"
 
 	"github.com/MatthewFrisby/thesis-pieces/pkg/store"
 	"github.com/MatthewFrisby/thesis-pieces/pkg/tasks"
@@ -62,7 +64,7 @@ func (d *DocumentProcessor) ProcessTask(ctx context.Context, t *asynq.Task) erro
 
 	_, err = d.store.SetDocumentContent(ctx, p.DocumentId, content)
 	if err != nil {
-		return err
+		return errors.Wrap(err, fmt.Sprintf("error setting document content with id: [%v]", p.DocumentId))
 	}
 
 	return nil

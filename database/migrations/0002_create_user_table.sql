@@ -17,7 +17,7 @@ CREATE TABLE users
 -- Users history table
 CREATE TABLE users_history
 (
-    id              INT       NOT NULL,
+    id              SERIAL PRIMARY KEY,
     uuid            UUID      NOT NULL,
     created_at      TIMESTAMP NOT NULL,
     updated_at      TIMESTAMP NOT NULL,
@@ -27,6 +27,8 @@ CREATE TABLE users_history
     first_name      VARCHAR   NOT NULL,
     last_name       VARCHAR   NOT NULL,
     is_admin        BOOLEAN   NOT NULL,
+--  HISTORY FIELDS
+    user_id         INT NOT NULL,
     history_time    TIMESTAMP NOT NULL,
     history_user_id INT,
     operation       VARCHAR
@@ -54,9 +56,37 @@ CREATE OR REPLACE FUNCTION process_users_history() RETURNS TRIGGER AS
 $$
 BEGIN
     IF (TG_OP = 'DELETE') THEN
-        INSERT INTO users_history SELECT OLD.*, CURRENT_TIMESTAMP, NULL, TG_OP;
+        INSERT INTO users_history (uuid, created_at, updated_at, username, email, password, first_name, last_name,
+                                   is_admin, user_id, history_time, history_user_id, operation)
+        SELECT OLD.uuid,
+               OLD.created_at,
+               OLD.updated_at,
+               OLD.username,
+               OLD.email,
+               OLD.password,
+               OLD.first_name,
+               OLD.last_name,
+               OLD.is_admin,
+               OLD.id,
+               CURRENT_TIMESTAMP,
+               NULL,
+               TG_OP;
     ELSE
-        INSERT INTO users_history SELECT NEW.*, NEW.updated_at, NULL, TG_OP;
+        INSERT INTO users_history (uuid, created_at, updated_at, username, email, password, first_name, last_name,
+                                   is_admin, user_id, history_time, history_user_id, operation)
+        SELECT NEW.uuid,
+               NEW.created_at,
+               NEW.updated_at,
+               NEW.username,
+               NEW.email,
+               NEW.password,
+               NEW.first_name,
+               NEW.last_name,
+               NEW.is_admin,
+               NEW.id,
+               NEW.updated_at,
+               NULL,
+               TG_OP;
     END IF;
     RETURN NULL;
 END;

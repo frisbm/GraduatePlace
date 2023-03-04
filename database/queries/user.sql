@@ -22,6 +22,6 @@ RETURNING *;
 -- name: SetUserHistoryUserId :one
 UPDATE users_history
 SET history_user_id = $3
-WHERE id = $1
+WHERE user_id = $1
   AND history_time = $2
 RETURNING *;

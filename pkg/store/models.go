@@ -36,6 +36,7 @@ type DocumentsHistory struct {
 	Filetype      string
 	Content       *string
 	ContentHash   *string
+	DocumentID    int32
 	HistoryTime   time.Time
 	HistoryUserID *int32
 	Operation     *string
@@ -74,6 +75,7 @@ type UsersHistory struct {
 	FirstName     string
 	LastName      string
 	IsAdmin       bool
+	UserID        int32
 	HistoryTime   time.Time
 	HistoryUserID *int32
 	Operation     *string

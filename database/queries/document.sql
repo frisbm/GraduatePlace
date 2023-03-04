@@ -6,7 +6,7 @@ RETURNING *;
 -- name: SetDocumentHistoryUserId :one
 UPDATE documents_history
 SET history_user_id = $3
-WHERE id = $1
+WHERE document_id = $1
   AND history_time = $2
 RETURNING *;
 

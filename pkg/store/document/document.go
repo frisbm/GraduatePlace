@@ -31,7 +31,7 @@ func (s *Store) CreateDocument(ctx context.Context, uploadDocument document.Uplo
 		return nil, err
 	}
 	_, err = s.db.SetDocumentHistoryUserId(ctx, store.SetDocumentHistoryUserIdParams{
-		ID:            doc.ID,
+		DocumentID:    doc.ID,
 		HistoryTime:   doc.UpdatedAt,
 		HistoryUserID: &uploadDocument.UserID,
 	})

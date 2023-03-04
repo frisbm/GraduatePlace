@@ -20,7 +20,7 @@ CREATE TABLE documents
 -- Documents history table
 CREATE TABLE documents_history
 (
-    id              INT       NOT NULL,
+    id              SERIAL PRIMARY KEY,
     uuid            UUID      NOT NULL,
     user_id         INT       NOT NULL,
     created_at      TIMESTAMP NOT NULL,
@@ -31,6 +31,8 @@ CREATE TABLE documents_history
     filetype        VARCHAR   NOT NULL,
     content         VARCHAR,
     content_hash    VARCHAR,
+--  HISTORY FIELDS
+    document_id     INT NOT NULL,
     history_time    TIMESTAMP NOT NULL,
     history_user_id INT,
     operation       VARCHAR
@@ -58,9 +60,39 @@ CREATE OR REPLACE FUNCTION process_documents_history() RETURNS TRIGGER AS
 $$
 BEGIN
     IF (TG_OP = 'DELETE') THEN
-        INSERT INTO documents_history SELECT OLD.*, CURRENT_TIMESTAMP, NULL, TG_OP;
+        INSERT INTO documents_history (uuid, user_id, created_at, updated_at, title, description, filename, filetype,
+                                       content, content_hash, document_id, history_time, history_user_id, operation)
+        SELECT OLD.uuid,
+               OLD.user_id,
+               OLD.created_at,
+               OLD.updated_at,
+               OLD.title,
+               OLD.description,
+               OLD.filename,
+               OLD.filetype,
+               OLD.content,
+               OLD.content_hash,
+               OLD.id,
+               CURRENT_TIMESTAMP,
+               NULL,
+               TG_OP;
     ELSE
-        INSERT INTO documents_history SELECT NEW.*, NEW.updated_at, NULL, TG_OP;
+        INSERT INTO documents_history (uuid, user_id, created_at, updated_at, title, description, filename, filetype,
+                                       content, content_hash, document_id, history_time, history_user_id, operation)
+        SELECT NEW.uuid,
+               NEW.user_id,
+               NEW.created_at,
+               NEW.updated_at,
+               NEW.title,
+               NEW.description,
+               NEW.filename,
+               NEW.filetype,
+               NEW.content,
+               NEW.content_hash,
+               NEW.id,
+               NEW.updated_at,
+               NULL,
+               TG_OP;
     END IF;
     RETURN NULL;
 END;

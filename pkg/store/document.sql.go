@@ -191,19 +191,19 @@ func (q *Queries) SetDocumentContent(ctx context.Context, arg SetDocumentContent
 const setDocumentHistoryUserId = `-- name: SetDocumentHistoryUserId :one
 UPDATE documents_history
 SET history_user_id = $3
-WHERE id = $1
+WHERE document_id = $1
   AND history_time = $2
-RETURNING id, uuid, user_id, created_at, updated_at, title, description, filename, filetype, content, content_hash, history_time, history_user_id, operation
+RETURNING id, uuid, user_id, created_at, updated_at, title, description, filename, filetype, content, content_hash, document_id, history_time, history_user_id, operation
 `
 
 type SetDocumentHistoryUserIdParams struct {
-	ID            int32
+	DocumentID    int32
 	HistoryTime   time.Time
 	HistoryUserID *int32
 }
 
 func (q *Queries) SetDocumentHistoryUserId(ctx context.Context, arg SetDocumentHistoryUserIdParams) (*DocumentsHistory, error) {
-	row := q.db.QueryRowContext(ctx, setDocumentHistoryUserId, arg.ID, arg.HistoryTime, arg.HistoryUserID)
+	row := q.db.QueryRowContext(ctx, setDocumentHistoryUserId, arg.DocumentID, arg.HistoryTime, arg.HistoryUserID)
 	var i DocumentsHistory
 	err := row.Scan(
 		&i.ID,
@@ -217,6 +217,7 @@ func (q *Queries) SetDocumentHistoryUserId(ctx context.Context, arg SetDocumentH
 		&i.Filetype,
 		&i.Content,
 		&i.ContentHash,
+		&i.DocumentID,
 		&i.HistoryTime,
 		&i.HistoryUserID,
 		&i.Operation,
