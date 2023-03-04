@@ -99,7 +99,6 @@ func (d *DocumentProcessor) parseDocx(reader io.Reader) (*string, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(docx)
 	return d.cleanContent(docx), nil
 }
 
