@@ -7,8 +7,9 @@ package store
 import (
 	"time"
 
-	document "github.com/frisbm/graduateplace/pkg/models/document"
 	"github.com/google/uuid"
+
+	document "github.com/frisbm/graduateplace/pkg/models/document"
 )
 
 type Document struct {

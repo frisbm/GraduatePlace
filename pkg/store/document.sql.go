@@ -9,8 +9,9 @@ import (
 	"context"
 	"time"
 
-	document "github.com/frisbm/graduateplace/pkg/models/document"
 	"github.com/google/uuid"
+
+	document "github.com/frisbm/graduateplace/pkg/models/document"
 )
 
 const createDocument = `-- name: CreateDocument :one
