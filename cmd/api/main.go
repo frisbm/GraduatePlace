@@ -73,7 +73,7 @@ func main() {
 	}
 	defer database.Close()
 
-	if err = goose.Up(database, "database/migrations"); err != nil {
+	if err = goose.Up(database, "pkg/store/database/migrations"); err != nil {
 		log.Fatalf("failed migrating with goose: %v", err)
 	}
 	db := store.New(database)

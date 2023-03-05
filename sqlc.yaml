@@ -1,8 +1,8 @@
 version: "2"
 sql:
   - engine: "postgresql"
-    queries: "database/queries"
-    schema: "database/migrations"
+    queries: "pkg/store/database/queries"
+    schema: "pkg/store/database/migrations"
     gen:
       go:
         package: "store"
@@ -31,3 +31,13 @@ sql:
               type: 'int32'
               pointer: false
             nullable: false
+          - column: 'documents.filetype'
+            go_type:
+              import: "github.com/frisbm/graduateplace/pkg/models/document"
+              package: "document"
+              type: "Filetype"
+          - column: 'documents_history.filetype'
+            go_type:
+              import: "github.com/frisbm/graduateplace/pkg/models/document"
+              package: "document"
+              type: "Filetype"
