@@ -7,6 +7,7 @@ package store
 import (
 	"time"
 
+	document "github.com/frisbm/graduateplace/pkg/models/document"
 	"github.com/google/uuid"
 )
 
@@ -19,7 +20,7 @@ type Document struct {
 	Title       string
 	Description string
 	Filename    string
-	Filetype    string
+	Filetype    document.Filetype
 	Content     *string
 	ContentHash *string
 }
@@ -33,7 +34,7 @@ type DocumentsHistory struct {
 	Title         string
 	Description   string
 	Filename      string
-	Filetype      string
+	Filetype      document.Filetype
 	Content       *string
 	ContentHash   *string
 	DocumentID    int32

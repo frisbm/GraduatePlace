@@ -9,6 +9,7 @@ import (
 	"context"
 	"time"
 
+	document "github.com/frisbm/graduateplace/pkg/models/document"
 	"github.com/google/uuid"
 )
 
@@ -23,7 +24,7 @@ type CreateDocumentParams struct {
 	Title       string
 	Description string
 	Filename    string
-	Filetype    string
+	Filetype    document.Filetype
 	Content     *string
 }
 
@@ -117,7 +118,7 @@ type SearchDocumentsRow struct {
 	Title       string
 	Description string
 	Filename    string
-	Filetype    string
+	Filetype    document.Filetype
 	Username    string
 	Rank        float32
 	Count       int64

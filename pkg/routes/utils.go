@@ -34,7 +34,7 @@ func Response(w http.ResponseWriter, statusCode int, response any) {
 type Body interface {
 	SetFile(file []byte)
 	SetFileName(filename string)
-	SetFileType(filetype string)
+	SetFileType(filetype string) error
 }
 
 func getFiletypeFromFilename(filename string) (string, error) {
@@ -44,16 +44,7 @@ func getFiletypeFromFilename(filename string) (string, error) {
 	}
 
 	extension := parts[len(parts)-1]
-	switch strings.ToUpper(extension) {
-	case "PDF":
-		return "PDF", nil
-	case "DOCX":
-		return "DOCX", nil
-	case "TXT":
-		return "TXT", nil
-	default:
-		return "", errors.New("wrong filetype")
-	}
+	return strings.ToUpper(extension), nil
 }
 
 func ParseMultiPartFormWithFileAndBody[T Body](req *http.Request, body T) error {
@@ -102,8 +93,7 @@ func ParseMultiPartFormWithFileAndBody[T Body](req *http.Request, body T) error 
 	}
 	body.SetFile(file)
 	body.SetFileName(filename)
-	body.SetFileType(filetype)
-	return nil
+	return body.SetFileType(filetype)
 }
 
 func SanitizePagination(limit, offset int32) (int32, int32) {

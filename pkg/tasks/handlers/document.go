@@ -8,6 +8,8 @@ import (
 	"io"
 	"strings"
 
+	"github.com/frisbm/graduateplace/pkg/models/document"
+
 	"code.sajari.com/docconv"
 	"github.com/ledongthuc/pdf"
 
@@ -70,7 +72,7 @@ func (d *DocumentProcessor) ProcessTask(ctx context.Context, t *asynq.Task) erro
 	return nil
 }
 
-func (d *DocumentProcessor) process(filetype string, file io.ReadCloser) (*string, error) {
+func (d *DocumentProcessor) process(filetype document.Filetype, file io.ReadCloser) (*string, error) {
 	buff := bytes.NewBuffer([]byte{})
 	size, err := io.Copy(buff, file)
 	if err != nil {

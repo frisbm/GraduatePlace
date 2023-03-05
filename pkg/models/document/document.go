@@ -3,17 +3,41 @@ package document
 import (
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/google/uuid"
 )
 
+type Filetype string
+
+const (
+	FiletypePDF  Filetype = "PDF"
+	FiletypeDOCX Filetype = "DOCX"
+	FiletypeTXT  Filetype = "TXT"
+)
+
+var (
+	InvalidFiletypeError = errors.New("invalid filetype, must be a pdf, txt, or docx")
+)
+
+func (e Filetype) Valid() bool {
+	switch e {
+	case FiletypePDF,
+		FiletypeDOCX,
+		FiletypeTXT:
+		return true
+	}
+	return false
+}
+
 type UploadDocument struct {
-	Title       string  `json:"title,omitempty"`
-	Description string  `json:"description,omitempty"`
-	FileName    string  `json:"filename,omitempty"`
-	File        []byte  `json:"file,omitempty"`
-	FileType    string  `json:"filetype,omitempty"`
-	UserID      int32   `json:"userId,omitempty"`
-	Content     *string `json:"content,omitempty"`
+	Title       string   `json:"title,omitempty"`
+	Description string   `json:"description,omitempty"`
+	FileName    string   `json:"filename,omitempty"`
+	File        []byte   `json:"file,omitempty"`
+	FileType    Filetype `json:"filetype,omitempty"`
+	UserID      int32    `json:"userId,omitempty"`
+	Content     *string  `json:"content,omitempty"`
 }
 
 func (u *UploadDocument) SetFile(file []byte) {
@@ -24,8 +48,13 @@ func (u *UploadDocument) SetFileName(filename string) {
 	u.FileName = filename
 }
 
-func (u *UploadDocument) SetFileType(filetype string) {
-	u.FileType = filetype
+func (u *UploadDocument) SetFileType(filetype string) error {
+	f := Filetype(filetype)
+	if !f.Valid() {
+		return InvalidFiletypeError
+	}
+	u.FileType = f
+	return nil
 }
 
 type SearchDocuments struct {
@@ -41,7 +70,7 @@ type SearchDocumentsResult struct {
 	Title       string    `json:"title,omitempty"`
 	Description string    `json:"description,omitempty"`
 	Filename    string    `json:"filename,omitempty"`
-	Filetype    string    `json:"filetype,omitempty"`
+	Filetype    Filetype  `json:"filetype,omitempty"`
 	Username    string    `json:"username,omitempty"`
 	Rank        float32   `json:"rank,omitempty"`
 }
