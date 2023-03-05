@@ -5,9 +5,9 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/store"
+	"github.com/frisbm/graduateplace/pkg/store"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/models/user"
+	"github.com/frisbm/graduateplace/pkg/models/user"
 )
 
 type Store struct {

@@ -3,12 +3,12 @@ package document
 import (
 	"context"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/models/pagination"
+	"github.com/frisbm/graduateplace/pkg/models/pagination"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/store"
+	"github.com/frisbm/graduateplace/pkg/store"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/models/document"
-	"github.com/MatthewFrisby/thesis-pieces/pkg/utils"
+	"github.com/frisbm/graduateplace/pkg/models/document"
+	"github.com/frisbm/graduateplace/pkg/utils"
 
 	"github.com/pkg/errors"
 )

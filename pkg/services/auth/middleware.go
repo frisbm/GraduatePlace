@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/store"
+	"github.com/frisbm/graduateplace/pkg/store"
 )
 
 type AuthMiddleware struct {

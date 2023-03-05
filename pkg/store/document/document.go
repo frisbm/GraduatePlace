@@ -3,9 +3,9 @@ package document
 import (
 	"context"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/models/document"
+	"github.com/frisbm/graduateplace/pkg/models/document"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/store"
+	"github.com/frisbm/graduateplace/pkg/store"
 )
 
 type Store struct {

@@ -6,14 +6,14 @@ import (
 
 	"github.com/gorilla/schema"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/models/pagination"
+	"github.com/frisbm/graduateplace/pkg/models/pagination"
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/constants"
-	"github.com/MatthewFrisby/thesis-pieces/pkg/models/document"
+	"github.com/frisbm/graduateplace/pkg/constants"
+	"github.com/frisbm/graduateplace/pkg/models/document"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/routes"
+	"github.com/frisbm/graduateplace/pkg/routes"
 )
 
 type Manager interface {

@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/constants"
+	"github.com/frisbm/graduateplace/pkg/constants"
 
 	"github.com/pkg/errors"
 )

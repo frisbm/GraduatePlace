@@ -1,4 +1,4 @@
-module github.com/MatthewFrisby/thesis-pieces
+module github.com/frisbm/graduateplace
 
 go 1.19
 

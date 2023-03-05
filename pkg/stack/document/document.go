@@ -1,12 +1,12 @@
 package document
 
 import (
-	documentManager "github.com/MatthewFrisby/thesis-pieces/pkg/managers/document"
-	documentRoutes "github.com/MatthewFrisby/thesis-pieces/pkg/routes/document"
-	"github.com/MatthewFrisby/thesis-pieces/pkg/services/s3"
-	"github.com/MatthewFrisby/thesis-pieces/pkg/store"
-	documentStore "github.com/MatthewFrisby/thesis-pieces/pkg/store/document"
-	"github.com/MatthewFrisby/thesis-pieces/pkg/tasks"
+	documentManager "github.com/frisbm/graduateplace/pkg/managers/document"
+	documentRoutes "github.com/frisbm/graduateplace/pkg/routes/document"
+	"github.com/frisbm/graduateplace/pkg/services/s3"
+	"github.com/frisbm/graduateplace/pkg/store"
+	documentStore "github.com/frisbm/graduateplace/pkg/store/document"
+	"github.com/frisbm/graduateplace/pkg/tasks"
 )
 
 type Stack struct {

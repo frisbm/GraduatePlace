@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/jwtauth/v5"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/models/user"
+	"github.com/frisbm/graduateplace/pkg/models/user"
 )
 
 type AuthService struct {

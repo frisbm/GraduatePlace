@@ -8,19 +8,19 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/services/s3"
-	"github.com/MatthewFrisby/thesis-pieces/pkg/store/document"
-	"github.com/MatthewFrisby/thesis-pieces/pkg/tasks/handlers"
+	"github.com/frisbm/graduateplace/pkg/services/s3"
+	"github.com/frisbm/graduateplace/pkg/store/document"
+	"github.com/frisbm/graduateplace/pkg/tasks/handlers"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/tasks"
+	"github.com/frisbm/graduateplace/pkg/tasks"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/constants"
+	"github.com/frisbm/graduateplace/pkg/constants"
 
 	"github.com/hibiken/asynq"
 	_ "github.com/lib/pq"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/config"
-	"github.com/MatthewFrisby/thesis-pieces/pkg/store"
+	"github.com/frisbm/graduateplace/pkg/config"
+	"github.com/frisbm/graduateplace/pkg/store"
 )
 
 func main() {

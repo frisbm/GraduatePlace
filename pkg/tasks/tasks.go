@@ -7,8 +7,8 @@ import (
 
 	"github.com/hibiken/asynq"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/constants"
-	"github.com/MatthewFrisby/thesis-pieces/pkg/utils"
+	"github.com/frisbm/graduateplace/pkg/constants"
+	"github.com/frisbm/graduateplace/pkg/utils"
 )
 
 type Options struct {

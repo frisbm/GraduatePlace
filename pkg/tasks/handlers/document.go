@@ -14,10 +14,10 @@ import (
 	"github.com/hibiken/asynq"
 	"github.com/pkg/errors"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/utils"
+	"github.com/frisbm/graduateplace/pkg/utils"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/store"
-	"github.com/MatthewFrisby/thesis-pieces/pkg/tasks"
+	"github.com/frisbm/graduateplace/pkg/store"
+	"github.com/frisbm/graduateplace/pkg/tasks"
 )
 
 type Store interface {

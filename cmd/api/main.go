@@ -11,30 +11,30 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/tasks"
+	"github.com/frisbm/graduateplace/pkg/tasks"
 
 	"github.com/hibiken/asynq"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/stack/document"
+	"github.com/frisbm/graduateplace/pkg/stack/document"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/services/s3"
+	"github.com/frisbm/graduateplace/pkg/services/s3"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/pressly/goose/v3"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/store"
+	"github.com/frisbm/graduateplace/pkg/store"
 
 	"github.com/go-chi/jwtauth/v5"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/services/auth"
+	"github.com/frisbm/graduateplace/pkg/services/auth"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
 	_ "github.com/lib/pq"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/config"
-	"github.com/MatthewFrisby/thesis-pieces/pkg/stack/user"
+	"github.com/frisbm/graduateplace/pkg/config"
+	"github.com/frisbm/graduateplace/pkg/stack/user"
 )
 
 const (

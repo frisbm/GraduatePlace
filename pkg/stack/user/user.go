@@ -1,13 +1,13 @@
 package user
 
 import (
-	userManager "github.com/MatthewFrisby/thesis-pieces/pkg/managers/user"
-	userRoutes "github.com/MatthewFrisby/thesis-pieces/pkg/routes/user"
-	"github.com/MatthewFrisby/thesis-pieces/pkg/services/auth"
-	"github.com/MatthewFrisby/thesis-pieces/pkg/services/s3"
-	"github.com/MatthewFrisby/thesis-pieces/pkg/store"
-	userStore "github.com/MatthewFrisby/thesis-pieces/pkg/store/user"
-	"github.com/MatthewFrisby/thesis-pieces/pkg/tasks"
+	userManager "github.com/frisbm/graduateplace/pkg/managers/user"
+	userRoutes "github.com/frisbm/graduateplace/pkg/routes/user"
+	"github.com/frisbm/graduateplace/pkg/services/auth"
+	"github.com/frisbm/graduateplace/pkg/services/s3"
+	"github.com/frisbm/graduateplace/pkg/store"
+	userStore "github.com/frisbm/graduateplace/pkg/store/user"
+	"github.com/frisbm/graduateplace/pkg/tasks"
 )
 
 type Stack struct {

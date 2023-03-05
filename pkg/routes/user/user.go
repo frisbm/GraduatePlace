@@ -7,8 +7,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/MatthewFrisby/thesis-pieces/pkg/models/user"
-	"github.com/MatthewFrisby/thesis-pieces/pkg/routes"
+	"github.com/frisbm/graduateplace/pkg/models/user"
+	"github.com/frisbm/graduateplace/pkg/routes"
 )
 
 type Manager interface {
