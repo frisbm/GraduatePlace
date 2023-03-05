@@ -181,7 +181,6 @@ func main() {
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	go func() {
 		<-sig
-		log.Println("Hi")
 		shutdownCtx, _ := context.WithTimeout(ctx, TIMEOUT)
 
 		go func() {
