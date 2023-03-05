@@ -105,9 +105,9 @@ LIMIT $1 OFFSET $2
 `
 
 type SearchDocumentsParams struct {
-	Limit  int32
-	Offset int32
-	Query  string
+	Limit              int32
+	Offset             int32
+	WebsearchToTsquery string
 }
 
 type SearchDocumentsRow struct {
@@ -124,7 +124,7 @@ type SearchDocumentsRow struct {
 }
 
 func (q *Queries) SearchDocuments(ctx context.Context, arg SearchDocumentsParams) ([]*SearchDocumentsRow, error) {
-	rows, err := q.db.QueryContext(ctx, searchDocuments, arg.Limit, arg.Offset, arg.Query)
+	rows, err := q.db.QueryContext(ctx, searchDocuments, arg.Limit, arg.Offset, arg.WebsearchToTsquery)
 	if err != nil {
 		return nil, err
 	}

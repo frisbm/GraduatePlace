@@ -25,7 +25,7 @@ WHERE id = $1;
 WITH matching_search_results AS (SELECT document_id,
                                         ts_rank_cd(ts, query, 32) AS document_rank
                                  FROM documents_search,
-                                      websearch_to_tsquery('english', @query) query
+                                      websearch_to_tsquery('english', $3) query
                                  WHERE query @@ ts
                                  group by 1, 2
                                  ORDER BY document_rank DESC

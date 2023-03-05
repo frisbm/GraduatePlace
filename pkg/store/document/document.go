@@ -62,9 +62,9 @@ func (s *Store) GetDocument(ctx context.Context, id int32) (*store.Document, err
 
 func (s *Store) SearchDocuments(ctx context.Context, searchDocuments document.SearchDocuments) ([]*store.SearchDocumentsRow, error) {
 	docs, err := s.db.SearchDocuments(ctx, store.SearchDocumentsParams{
-		Limit:  searchDocuments.Limit,
-		Offset: searchDocuments.Offset,
-		Query:  searchDocuments.Query,
+		Limit:              searchDocuments.Limit,
+		Offset:             searchDocuments.Offset,
+		WebsearchToTsquery: searchDocuments.Query,
 	})
 	if err != nil {
 		return nil, err
