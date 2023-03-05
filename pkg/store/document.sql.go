@@ -29,7 +29,7 @@ type CreateDocumentParams struct {
 }
 
 func (q *Queries) CreateDocument(ctx context.Context, arg CreateDocumentParams) (*Document, error) {
-	row := q.db.QueryRowContext(ctx, createDocument,
+	row := q.queryRow(ctx, q.createDocumentStmt, createDocument,
 		arg.UserID,
 		arg.Title,
 		arg.Description,
@@ -61,7 +61,7 @@ WHERE id = $1
 `
 
 func (q *Queries) GetDocument(ctx context.Context, id int32) (*Document, error) {
-	row := q.db.QueryRowContext(ctx, getDocument, id)
+	row := q.queryRow(ctx, q.getDocumentStmt, getDocument, id)
 	var i Document
 	err := row.Scan(
 		&i.ID,
@@ -125,7 +125,7 @@ type SearchDocumentsRow struct {
 }
 
 func (q *Queries) SearchDocuments(ctx context.Context, arg SearchDocumentsParams) ([]*SearchDocumentsRow, error) {
-	rows, err := q.db.QueryContext(ctx, searchDocuments, arg.Limit, arg.Offset, arg.WebsearchToTsquery)
+	rows, err := q.query(ctx, q.searchDocumentsStmt, searchDocuments, arg.Limit, arg.Offset, arg.WebsearchToTsquery)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +171,7 @@ type SetDocumentContentParams struct {
 }
 
 func (q *Queries) SetDocumentContent(ctx context.Context, arg SetDocumentContentParams) (*Document, error) {
-	row := q.db.QueryRowContext(ctx, setDocumentContent, arg.ID, arg.Content)
+	row := q.queryRow(ctx, q.setDocumentContentStmt, setDocumentContent, arg.ID, arg.Content)
 	var i Document
 	err := row.Scan(
 		&i.ID,
@@ -204,7 +204,7 @@ type SetDocumentHistoryUserIdParams struct {
 }
 
 func (q *Queries) SetDocumentHistoryUserId(ctx context.Context, arg SetDocumentHistoryUserIdParams) (*DocumentsHistory, error) {
-	row := q.db.QueryRowContext(ctx, setDocumentHistoryUserId, arg.DocumentID, arg.HistoryTime, arg.HistoryUserID)
+	row := q.queryRow(ctx, q.setDocumentHistoryUserIdStmt, setDocumentHistoryUserId, arg.DocumentID, arg.HistoryTime, arg.HistoryUserID)
 	var i DocumentsHistory
 	err := row.Scan(
 		&i.ID,

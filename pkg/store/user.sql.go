@@ -27,7 +27,7 @@ type CreateUserParams struct {
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*User, error) {
-	row := q.db.QueryRowContext(ctx, createUser,
+	row := q.queryRow(ctx, q.createUserStmt, createUser,
 		arg.Username,
 		arg.Email,
 		arg.Password,
@@ -58,7 +58,7 @@ LIMIT 1
 `
 
 func (q *Queries) GetUserFromEmail(ctx context.Context, email string) (*User, error) {
-	row := q.db.QueryRowContext(ctx, getUserFromEmail, email)
+	row := q.queryRow(ctx, q.getUserFromEmailStmt, getUserFromEmail, email)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -83,7 +83,7 @@ LIMIT 1
 `
 
 func (q *Queries) GetUserFromUUID(ctx context.Context, uuid uuid.UUID) (*User, error) {
-	row := q.db.QueryRowContext(ctx, getUserFromUUID, uuid)
+	row := q.queryRow(ctx, q.getUserFromUUIDStmt, getUserFromUUID, uuid)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -106,7 +106,7 @@ FROM users
 `
 
 func (q *Queries) GetUsers(ctx context.Context) ([]*User, error) {
-	rows, err := q.db.QueryContext(ctx, getUsers)
+	rows, err := q.query(ctx, q.getUsersStmt, getUsers)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +154,7 @@ type SetUserHistoryUserIdParams struct {
 }
 
 func (q *Queries) SetUserHistoryUserId(ctx context.Context, arg SetUserHistoryUserIdParams) (*UsersHistory, error) {
-	row := q.db.QueryRowContext(ctx, setUserHistoryUserId, arg.UserID, arg.HistoryTime, arg.HistoryUserID)
+	row := q.queryRow(ctx, q.setUserHistoryUserIdStmt, setUserHistoryUserId, arg.UserID, arg.HistoryTime, arg.HistoryUserID)
 	var i UsersHistory
 	err := row.Scan(
 		&i.ID,

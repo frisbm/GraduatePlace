@@ -7,6 +7,7 @@ package store
 import (
 	"context"
 	"database/sql"
+	"fmt"
 )
 
 type DBTX interface {
@@ -20,12 +21,158 @@ func New(db DBTX) *Queries {
 	return &Queries{db: db}
 }
 
+func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
+	q := Queries{db: db}
+	var err error
+	if q.createDocumentStmt, err = db.PrepareContext(ctx, createDocument); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateDocument: %w", err)
+	}
+	if q.createUserStmt, err = db.PrepareContext(ctx, createUser); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateUser: %w", err)
+	}
+	if q.getDocumentStmt, err = db.PrepareContext(ctx, getDocument); err != nil {
+		return nil, fmt.Errorf("error preparing query GetDocument: %w", err)
+	}
+	if q.getUserFromEmailStmt, err = db.PrepareContext(ctx, getUserFromEmail); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUserFromEmail: %w", err)
+	}
+	if q.getUserFromUUIDStmt, err = db.PrepareContext(ctx, getUserFromUUID); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUserFromUUID: %w", err)
+	}
+	if q.getUsersStmt, err = db.PrepareContext(ctx, getUsers); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUsers: %w", err)
+	}
+	if q.searchDocumentsStmt, err = db.PrepareContext(ctx, searchDocuments); err != nil {
+		return nil, fmt.Errorf("error preparing query SearchDocuments: %w", err)
+	}
+	if q.setDocumentContentStmt, err = db.PrepareContext(ctx, setDocumentContent); err != nil {
+		return nil, fmt.Errorf("error preparing query SetDocumentContent: %w", err)
+	}
+	if q.setDocumentHistoryUserIdStmt, err = db.PrepareContext(ctx, setDocumentHistoryUserId); err != nil {
+		return nil, fmt.Errorf("error preparing query SetDocumentHistoryUserId: %w", err)
+	}
+	if q.setUserHistoryUserIdStmt, err = db.PrepareContext(ctx, setUserHistoryUserId); err != nil {
+		return nil, fmt.Errorf("error preparing query SetUserHistoryUserId: %w", err)
+	}
+	return &q, nil
+}
+
+func (q *Queries) Close() error {
+	var err error
+	if q.createDocumentStmt != nil {
+		if cerr := q.createDocumentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createDocumentStmt: %w", cerr)
+		}
+	}
+	if q.createUserStmt != nil {
+		if cerr := q.createUserStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createUserStmt: %w", cerr)
+		}
+	}
+	if q.getDocumentStmt != nil {
+		if cerr := q.getDocumentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getDocumentStmt: %w", cerr)
+		}
+	}
+	if q.getUserFromEmailStmt != nil {
+		if cerr := q.getUserFromEmailStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUserFromEmailStmt: %w", cerr)
+		}
+	}
+	if q.getUserFromUUIDStmt != nil {
+		if cerr := q.getUserFromUUIDStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUserFromUUIDStmt: %w", cerr)
+		}
+	}
+	if q.getUsersStmt != nil {
+		if cerr := q.getUsersStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUsersStmt: %w", cerr)
+		}
+	}
+	if q.searchDocumentsStmt != nil {
+		if cerr := q.searchDocumentsStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing searchDocumentsStmt: %w", cerr)
+		}
+	}
+	if q.setDocumentContentStmt != nil {
+		if cerr := q.setDocumentContentStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing setDocumentContentStmt: %w", cerr)
+		}
+	}
+	if q.setDocumentHistoryUserIdStmt != nil {
+		if cerr := q.setDocumentHistoryUserIdStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing setDocumentHistoryUserIdStmt: %w", cerr)
+		}
+	}
+	if q.setUserHistoryUserIdStmt != nil {
+		if cerr := q.setUserHistoryUserIdStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing setUserHistoryUserIdStmt: %w", cerr)
+		}
+	}
+	return err
+}
+
+func (q *Queries) exec(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (sql.Result, error) {
+	switch {
+	case stmt != nil && q.tx != nil:
+		return q.tx.StmtContext(ctx, stmt).ExecContext(ctx, args...)
+	case stmt != nil:
+		return stmt.ExecContext(ctx, args...)
+	default:
+		return q.db.ExecContext(ctx, query, args...)
+	}
+}
+
+func (q *Queries) query(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) (*sql.Rows, error) {
+	switch {
+	case stmt != nil && q.tx != nil:
+		return q.tx.StmtContext(ctx, stmt).QueryContext(ctx, args...)
+	case stmt != nil:
+		return stmt.QueryContext(ctx, args...)
+	default:
+		return q.db.QueryContext(ctx, query, args...)
+	}
+}
+
+func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, args ...interface{}) *sql.Row {
+	switch {
+	case stmt != nil && q.tx != nil:
+		return q.tx.StmtContext(ctx, stmt).QueryRowContext(ctx, args...)
+	case stmt != nil:
+		return stmt.QueryRowContext(ctx, args...)
+	default:
+		return q.db.QueryRowContext(ctx, query, args...)
+	}
+}
+
 type Queries struct {
-	db DBTX
+	db                           DBTX
+	tx                           *sql.Tx
+	createDocumentStmt           *sql.Stmt
+	createUserStmt               *sql.Stmt
+	getDocumentStmt              *sql.Stmt
+	getUserFromEmailStmt         *sql.Stmt
+	getUserFromUUIDStmt          *sql.Stmt
+	getUsersStmt                 *sql.Stmt
+	searchDocumentsStmt          *sql.Stmt
+	setDocumentContentStmt       *sql.Stmt
+	setDocumentHistoryUserIdStmt *sql.Stmt
+	setUserHistoryUserIdStmt     *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db: tx,
+		db:                           tx,
+		tx:                           tx,
+		createDocumentStmt:           q.createDocumentStmt,
+		createUserStmt:               q.createUserStmt,
+		getDocumentStmt:              q.getDocumentStmt,
+		getUserFromEmailStmt:         q.getUserFromEmailStmt,
+		getUserFromUUIDStmt:          q.getUserFromUUIDStmt,
+		getUsersStmt:                 q.getUsersStmt,
+		searchDocumentsStmt:          q.searchDocumentsStmt,
+		setDocumentContentStmt:       q.setDocumentContentStmt,
+		setDocumentHistoryUserIdStmt: q.setDocumentHistoryUserIdStmt,
+		setUserHistoryUserIdStmt:     q.setUserHistoryUserIdStmt,
 	}
 }

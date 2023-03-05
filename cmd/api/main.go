@@ -76,7 +76,11 @@ func main() {
 	if err = goose.Up(database, "pkg/store/database/migrations"); err != nil {
 		log.Fatalf("failed migrating with goose: %v", err)
 	}
-	db := store.New(database)
+	db, err := store.Prepare(ctx, database)
+	if err != nil {
+		log.Fatalf("failed preparing preparing statments: %v", err)
+	}
+	defer db.Close()
 
 	// Asynq,Redis, & Task Manager Setup
 	// ###################################################
