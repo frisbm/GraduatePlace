@@ -45,7 +45,7 @@ services:
     depends_on:
       - redis
     ports:
-      - "3000:3000"
+      - "6000:3000"
     networks:
       - shared
   async:
@@ -53,7 +53,7 @@ services:
       context: .
     image: async
     container_name: async
-    command: air --build.cmd "go build -o ./tmp/async ./cmd/async/main.go" --build.bin "./tmp/async"
+    command: air --build.cmd "go build -o ./tmp/async ./cmd/async/main.go" --build.bin "./tmp/async" --build.exclude_dir "frontend"
     environment:
       - ENVIRONMENT=local
       - DB_HOST=postgresql
@@ -81,7 +81,7 @@ services:
       context: .
     image: api
     container_name: api
-    command: air --build.cmd "go build -o ./tmp/api ./cmd/api/main.go" --build.bin "./tmp/api"
+    command: air --build.cmd "go build -o ./tmp/api ./cmd/api/main.go" --build.bin "./tmp/api" --build.exclude_dir "frontend"
     environment:
       - ENVIRONMENT=local
       - DB_HOST=postgresql
