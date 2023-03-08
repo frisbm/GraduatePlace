@@ -18,3 +18,4 @@
 .idea
 store.db
 .DS_STORE
+node_modules
