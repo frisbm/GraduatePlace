@@ -5,7 +5,6 @@ import {Router} from "@solidjs/router";
 
 import './index.css';
 import App from './App';
-import {QueryCache, QueryClient, QueryClientProvider} from "@tanstack/solid-query";
 
 const root = document.getElementById('root');
 
@@ -13,14 +12,9 @@ if (import.meta.env.DEV && !(root instanceof HTMLElement)) {
     throw new Error('Root element not found.');
 }
 
-const queryCache = new QueryCache()
-const queryClient = new QueryClient({queryCache})
-
 render(() => (
-    <QueryClientProvider client={queryClient}>
         <Router>
             <App/>
         </Router>
-    </QueryClientProvider>
 
 ), root!);

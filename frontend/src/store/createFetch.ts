@@ -126,7 +126,7 @@ const fetchAuth = async <T>(result: CreateFetchResult<T>, setResult: SetStoreFun
 };
 
 const createFetch = <T>(endpoint: string, method: MethodType, auth?: boolean, body?: any): CreateFetchResult<T> => {
-    const [_endpoint, setEndpoint] = createSignal<string>(endpoint)
+    const [_endpoint,] = createSignal<string>(endpoint)
     const [result, setResult] = createStore<CreateFetchResult<T>>({
         data: null,
         loading: false,
